@@ -1,0 +1,20 @@
+<configuration>
+    <!--
+      Every appender writes to System.err. This is not a style choice.
+      stdout carries the JSON-RPC protocol, so one log line on stdout corrupts a frame and
+      the client either hangs or reports invalid JSON. Logback defaults to stdout, so the
+      target below is the single most important line in this file.
+    -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level [airline-ops] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- WARN, not INFO. A chatty server makes the backend log unreadable, because the
+         client forwards this stderr straight through. -->
+    <root level="WARN">
+        <appender-ref ref="STDERR"/>
+    </root>
+</configuration>

@@ -1,0 +1,215 @@
+package com.telusko.airline.service;
+
+import com.telusko.airline.config.AiMetrics;
+import com.telusko.airline.dto.AgentViews.ItineraryDay;
+import com.telusko.airline.dto.AgentViews.TraceStep;
+import com.telusko.airline.dto.AgentViews.TripPlan;
+import com.telusko.airline.dto.ApiDtos.TripPlanRequest;
+import dev.langchain4j.agentic.UntypedAgent;
+import dev.langchain4j.agentic.scope.AgentInvocation;
+import dev.langchain4j.agentic.scope.AgenticScope;
+import dev.langchain4j.agentic.scope.ResultWithAgenticScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Runs the trip planner sequence and parses the itinerary into days the UI can render.
+ * <p>
+ * The parsing at the bottom of this file is worth being honest about. Asking three agents to
+ * cooperate and then reading the last one's output with a text parser feels crude, and the
+ * alternative was worse: making the itinerary agent return a structured record meant it also
+ * had to obey a JSON schema while composing prose, and the writing got noticeably flatter.
+ * Letting it write naturally and parsing a simple, prompted format gave better itineraries.
+ * When parsing fails the whole text is returned as one day, so a passenger never loses the
+ * plan over a formatting slip.
+ */
+@Service
+public class TripPlanService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripPlanService.class);
+
+    private static final String FEATURE = "trip-planner";
+
+    /** Three days if nobody says, and never more than seven. */
+    private static final int DEFAULT_DAYS = 3;
+    private static final int MAX_DAYS = 7;
+
+    private final UntypedAgent tripPlanner;
+    private final AiMetrics metrics;
+
+    public TripPlanService(UntypedAgent tripPlanner, AiMetrics metrics) {
+        this.tripPlanner = tripPlanner;
+        this.metrics = metrics;
+    }
+
+    public TripPlan plan(TripPlanRequest request) {
+        int days = clampDays(request.days());
+        LocalDate departure = LocalDate.now().plusWeeks(2);
+
+        // The keys have to match the parameter names on the agent methods. That is how the
+        // sequence feeds each agent, and a typo here shows up as a MissingArgumentException
+        // rather than a wrong answer, which is the better failure of the two.
+        Map<String, Object> input = new LinkedHashMap<>();
+        input.put("originCity", request.originCity());
+        input.put("destinationCity", request.destinationCity());
+        input.put("departureDate", departure.toString());
+        input.put("month", String.valueOf(departure.getMonthValue()));
+        input.put("days", String.valueOf(days));
+        input.put("request", buildRequestText(request, days, departure));
+
+        try {
+            ResultWithAgenticScope<String> outcome =
+                    metrics.record(FEATURE, () -> tripPlanner.invokeWithAgenticScope(input));
+
+            AgenticScope scope = outcome.agenticScope();
+            String notes = stateOrEmpty(scope, "destinationNotes");
+            String flightAdvice = stateOrEmpty(scope, "flightAdvice");
+            String itinerary = firstNonBlank(stateOrEmpty(scope, "itinerary"), outcome.result());
+
+            return new TripPlan(
+                    request.destinationCity(),
+                    notes,
+                    flightAdvice,
+                    weatherLineFrom(notes),
+                    parseDays(itinerary, days),
+                    traceOf(scope));
+
+        } catch (RuntimeException ex) {
+            metrics.recordDegraded(FEATURE, ex.getClass().getSimpleName());
+            log.warn("Trip planner failed for {}: {}", request.destinationCity(), ex.getMessage());
+
+            return new TripPlan(request.destinationCity(),
+                    "We could not build a plan right now.", "", "",
+                    List.of(), List.of());
+        }
+    }
+
+    private String buildRequestText(TripPlanRequest request, int days, LocalDate departure) {
+        String interests = request.interests() == null || request.interests().isBlank()
+                ? "no particular interests given"
+                : request.interests();
+
+        return """
+                Plan a %d day trip to %s, flying from %s on %s.
+                Traveller interests: %s.
+                """.formatted(days, request.destinationCity(), request.originCity(), departure, interests);
+    }
+
+    /**
+     * Pulls the weather sentence out of the research notes for the summary card.
+     * <p>
+     * The notes already contain it and re-asking a model to extract one line would be a
+     * second billed call for something a string search does perfectly well.
+     */
+    private static String weatherLineFrom(String notes) {
+        if (notes == null || notes.isBlank()) {
+            return "";
+        }
+        for (String line : notes.split("\n")) {
+            String lower = line.toLowerCase();
+
+            // Named explicitly, or carrying a temperature. The first version also matched
+            // on " c" for Celsius, which quietly picked the line about Portuguese churches
+            // and put it in the weather box. A degree needs a digit in front of it.
+            if (lower.contains("weather") || lower.contains("monsoon")
+                    || lower.matches(".*\\d+\\s*(to\\s*\\d+\\s*)?(degrees|c\\b).*")) {
+                return line.replaceFirst("^[-*\\s]+", "").replace("**", "").trim();
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Reads the "Day 1: Title" format the itinerary agent was asked to produce.
+     * <p>
+     * Everything that is not a day heading and not blank becomes an activity of the current
+     * day. That is forgiving on purpose: bullets, dashes and plain lines all work, because
+     * the exact bullet character is not worth a failed request.
+     */
+    private static List<ItineraryDay> parseDays(String itinerary, int expectedDays) {
+        if (itinerary == null || itinerary.isBlank()) {
+            return List.of();
+        }
+
+        List<ItineraryDay> days = new ArrayList<>();
+        List<String> activities = new ArrayList<>();
+        String title = null;
+        int dayNumber = 0;
+
+        for (String rawLine : itinerary.split("\n")) {
+            String line = rawLine.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith("day ")) {
+                if (title != null) {
+                    days.add(new ItineraryDay(dayNumber, title, List.copyOf(activities)));
+                    activities.clear();
+                }
+                dayNumber = days.size() + 1;
+                title = line.replaceFirst("(?i)^day\\s*\\d+\\s*[:.\\-]?\\s*", "").trim();
+                if (title.isEmpty()) {
+                    title = "Day " + dayNumber;
+                }
+            } else if (title != null) {
+                activities.add(line.replaceFirst("^[-*\\d.\\s]+", "").trim());
+            }
+        }
+
+        if (title != null) {
+            days.add(new ItineraryDay(dayNumber, title, List.copyOf(activities)));
+        }
+
+        // The model wrote something we could not read as days. Better to show the passenger
+        // the plan as one block than to show them nothing.
+        if (days.isEmpty()) {
+            return List.of(new ItineraryDay(1, "Your trip", List.of(itinerary.trim())));
+        }
+
+        return days.size() > expectedDays ? days.subList(0, expectedDays) : days;
+    }
+
+    private List<TraceStep> traceOf(AgenticScope scope) {
+        List<TraceStep> trace = new ArrayList<>();
+        for (AgentInvocation invocation : scope.agentInvocations()) {
+            trace.add(new TraceStep(
+                    invocation.agentName(),
+                    "agent",
+                    "sequence step " + (trace.size() + 1),
+                    summarise(String.valueOf(invocation.output()))));
+        }
+        return trace;
+    }
+
+    private static String summarise(String text) {
+        if (text == null) {
+            return "";
+        }
+        String flat = text.replace('\n', ' ').trim();
+        return flat.length() <= 200 ? flat : flat.substring(0, 200) + "...";
+    }
+
+    private static int clampDays(int requested) {
+        if (requested <= 0) {
+            return DEFAULT_DAYS;
+        }
+        return Math.min(requested, MAX_DAYS);
+    }
+
+    private static String stateOrEmpty(AgenticScope scope, String key) {
+        Object value = scope.hasState(key) ? scope.readState(key) : null;
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        return first != null && !first.isBlank() ? first : (second == null ? "" : second);
+    }
+}

@@ -1,0 +1,11 @@
+global:
+  # Five seconds rather than the default fifteen. A class demo lasts two minutes, and a
+  # dashboard that updates three times in that window looks broken.
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: airline-backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:8080

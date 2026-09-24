@@ -1,0 +1,33 @@
+# Monitoring, kept in its own compose file on purpose.
+#
+# The backend's docker-compose.yml is started automatically by spring-boot-docker-compose and
+# holds only Postgres, because that is the one thing the app cannot run without. Prometheus
+# and Grafana are optional, so starting them is a separate deliberate command:
+#
+#   docker compose -f monitoring/docker-compose.yml up -d
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    extra_hosts:
+      # The backend runs on the host, not in this network. Without this the scrape target
+      # localhost:8080 would mean the Prometheus container itself and find nothing.
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    ports:
+      - "3000:3000"
+    environment:
+      # Anonymous admin access, because this is a local teaching stack and a login prompt
+      # in the middle of a class demo is friction with no benefit. Never do this anywhere real.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus

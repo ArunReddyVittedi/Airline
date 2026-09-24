@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.telusko</groupId>
+    <artifactId>airline-ops-mcp-server</artifactId>
+    <version>1.0.0</version>
+    <name>AirlineOpsMcpServer</name>
+    <description>An MCP stdio server standing in for the airline operations system</description>
+
+    <properties>
+        <!-- 17, not 21. A jar built for 17 runs on every newer JRE, and the client launches
+             this with whatever java is on the PATH, which is not necessarily the JDK the IDE
+             is using. Targeting the higher version is how you get UnsupportedClassVersionError
+             from a subprocess that dies before it can tell you why. -->
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Keeps real parameter names, so a @Tool argument arrives as "flightNumber" and
+             not "arg0". Spring Boot's parent sets this for you; a plain Maven build does not. -->
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+    </properties>
+
+    <dependencies>
+        <!-- The community module for building an MCP stdio server. It reads the same @Tool
+             and @P annotations the backend uses for its local tools. -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-community-mcp-server</artifactId>
+            <version>1.18.0-beta28</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.20</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- The client asks for exactly this name, so pin it. Without finalName the jar comes
+             out as airline-ops-mcp-server-1.0.0.jar and java -jar cannot find it. -->
+        <finalName>airline-ops-mcp-server</finalName>
+
+        <plugins>
+            <!-- One runnable jar with the dependencies inside, because the client starts this
+                 server with java -jar and nothing sets up a classpath for it. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <!-- Must match the package and class exactly. Get this
+                                         wrong and the jar builds cleanly, then dies at
+                                         startup with ClassNotFoundException, and the client
+                                         only reports "Process has exited". -->
+                                    <mainClass>com.telusko.airline.mcp.AirlineOpsMcpServer</mainClass>
+                                </transformer>
+                            </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

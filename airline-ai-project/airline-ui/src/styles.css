@@ -1,0 +1,1907 @@
+/* Plain CSS, no framework.
+   One file, a set of variables at the top, and nothing to learn before reading a component. */
+
+:root {
+  /* A deep navy and a warm accent, which is where most airline palettes land: navy reads as
+     safe and the warm colour is what you put on the button you want pressed. */
+  --navy: #0a2540;
+  --navy-2: #123457;
+  --brand: #0b5cab;
+  --brand-dark: #084584;
+  --accent: #e2703a;
+  --accent-dark: #c85c28;
+
+  --ink: #16202c;
+  --ink-2: #3d4a5a;
+  --muted: #6b7785;
+  --line: #e3e8ee;
+  --line-2: #eef2f6;
+  --bg: #f7f9fb;
+  --card: #ffffff;
+
+  --good: #1c6b46;
+  --good-bg: #eef7f2;
+  --warn: #99560f;
+  --warn-bg: #fdf5ec;
+  --bad: #a52a2a;
+  --bad-bg: #fbeeee;
+
+  --r: 10px;
+  --r-lg: 14px;
+  --shadow-1: 0 1px 2px rgba(16, 32, 48, 0.06), 0 1px 3px rgba(16, 32, 48, 0.04);
+  --shadow-2: 0 4px 12px rgba(16, 32, 48, 0.08), 0 1px 3px rgba(16, 32, 48, 0.05);
+  --shadow-3: 0 12px 32px rgba(10, 37, 64, 0.16);
+
+  --shell: 1180px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Sticky footer without a fixed height on anything. */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  flex: 1;
+}
+
+/* One container width, used by the header, the page and the footer, so everything lines up. */
+.shell {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+main.shell {
+  padding-bottom: 72px;
+}
+
+main.shell > section {
+  margin-top: 44px;
+}
+
+.section-head {
+  margin-bottom: 18px;
+}
+
+.section-head h2 {
+  font-size: 21px;
+}
+
+.section-note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ============================================================ header */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar {
+  background: var(--navy);
+  color: #cfdcea;
+  font-size: 12.5px;
+}
+
+.topbar-inner {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar-note {
+  opacity: 0.78;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.account-name {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Frequent flyer tiers. The colour is the whole point of a tier, so it gets one. */
+.tier {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  color: var(--navy);
+}
+
+.tier-blue {
+  background: #9fc4e8;
+}
+
+.tier-silver {
+  background: #d7dde3;
+}
+
+.tier-gold {
+  background: #e6c15c;
+}
+
+/* Staff, not a frequent flyer tier. Deliberately plainer than the tier chips so nobody
+   reads it as a status the account has earned. */
+.staff-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  color: #cfdcea;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  color: #cfdcea;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-btn:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.navbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar-inner {
+  height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--navy);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand strong {
+  font-weight: 800;
+}
+
+.logo-mark {
+  color: var(--brand);
+  flex: none;
+}
+
+.main-nav {
+  display: flex;
+  gap: 22px;
+  flex: 1;
+}
+
+.main-nav a {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  font-weight: 500;
+  padding: 20px 0;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.main-nav a:hover {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.main-nav a.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+/* The ops link is a different job from the passenger nav, so it looks different. */
+.main-nav a.nav-ops {
+  color: var(--accent-dark);
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 0;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 6px;
+  margin-left: auto;
+}
+
+/* ============================================================ hero */
+
+.hero-region {
+  position: relative;
+  /* Just enough room for the card to overhang. It was 96px, which left a visible band of
+     empty page between the card and the first section. */
+  padding-bottom: 40px;
+  background: var(--navy);
+}
+
+.hero {
+  position: relative;
+  /* 540, not 460. The search panel overhangs the foot of the banner by 80px, so a 460px
+     banner only ever shows 380px of artwork and the bottom of every scene sat behind the
+     panel: on the beach slide the sand was there and invisible. Taller costs nothing and a
+     bigger banner is what an airline site wants anyway. */
+  height: 540px;
+  overflow: hidden;
+  background: var(--navy);
+}
+
+.hero-track {
+  display: flex;
+  height: 100%;
+  transition: transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scenery {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* The wash is what makes white text safe over any of the scenes. Heavier on the left,
+   because that is where the copy sits. */
+.hero-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(6, 20, 36, 0.82) 0%,
+    rgba(6, 20, 36, 0.55) 42%,
+    rgba(6, 20, 36, 0.12) 78%
+  );
+}
+
+.hero-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* Above the search panel, not behind it. The panel is pulled up 80px over a 460px
+     banner, so anything below about 150px from the bottom is covered. */
+  bottom: 214px;
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 20px;
+  color: #fff;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: #b8d4ef;
+  margin-bottom: 12px;
+}
+
+.hero-copy h1 {
+  font-size: clamp(34px, 6vw, 60px);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.hero-fare {
+  margin: 0 0 22px;
+  font-size: 19px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-fare strong,
+.hero-fare span:first-child {
+  font-weight: 400;
+}
+
+.hero-fare-note {
+  font-size: 13px;
+  opacity: 0.72;
+}
+
+.btn-hero {
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-2);
+}
+
+.btn-hero:hover {
+  background: var(--accent-dark);
+}
+
+/* Fades the foot of the banner into the navy band under it.
+   Without this the crop cuts the skyline off along a hard horizontal line, which is the
+   one detail that made the whole page look unfinished. One gradient, no extra markup. */
+.hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 72px, not 130. The fade exists to hide the crop edge, and at 130 it was also washing
+     out the bottom of the artwork, which on the beach slide is the sand: the one part of
+     that scene worth looking at. Short enough to hide the seam, short enough to leave the
+     picture alone. */
+  height: 72px;
+  background: linear-gradient(to bottom, rgba(10, 37, 64, 0) 0%, var(--navy) 92%);
+  /* Above the slides, below the arrows and the dots. */
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-arrow,
+.hero-dots {
+  z-index: 2;
+}
+
+/* ---------- banner motion ----------
+   Three things move: the aircraft, the clouds, and the artwork itself.
+   Every one of them is switched off by the reduced motion block at the foot of this file. */
+
+.hero-plane {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Over the artwork and its wash, under the copy and the controls. */
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* The contrail is one long dash the length of the path, pushed off the end and then pulled
+   back, so the line appears to be laid down behind the aircraft. 1600 is comfortably longer
+   than the path, which is what makes the whole trail sweep through rather than repeat. */
+.contrail {
+  stroke-dasharray: 1600;
+  stroke-dashoffset: 1600;
+  animation: contrail 22s linear infinite;
+}
+
+@keyframes contrail {
+  0% {
+    stroke-dashoffset: 1600;
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.85;
+  }
+  82% {
+    opacity: 0.7;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* The aircraft fades in over the sea and out at the far edge, so it never pops into
+   existence at the frame boundary. */
+/* Travels the curve and fades at both ends in one animation, so the two can never fall out
+   of step. offset-rotate keeps the nose pointing along the path, which is the detail that
+   stops it looking like a decal being dragged sideways. */
+.plane-body {
+  offset-distance: 0%;
+  offset-rotate: auto;
+  animation: plane-fly 22s linear infinite;
+}
+
+@keyframes plane-fly {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+/* A few rooms switch on and off over a couple of minutes. Slow enough that nobody watches
+   it happen, quick enough that the building is different on a second glance. */
+.window-flicker {
+  animation: room-light 46s ease-in-out infinite;
+}
+
+@keyframes room-light {
+  0%,
+  38% {
+    opacity: 0.09;
+  }
+  44%,
+  76% {
+    opacity: 0.9;
+  }
+  82%,
+  100% {
+    opacity: 0.09;
+  }
+}
+
+/* ---------- stars ----------
+   The field fades out towards the horizon with a mask rather than by drawing fewer stars
+   near the bottom. A mask handles the whole group in one rule and keeps the star positions
+   free to be whatever looks best. */
+.stars {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 72%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 72%);
+}
+
+/* One rule for all forty six. The base brightness arrives per star as a custom property,
+   so a faint star stays faint at the top of its twinkle and a bright one stays bright. */
+.star {
+  opacity: var(--star-base, 0.6);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: calc(var(--star-base, 0.6) * 0.35);
+  }
+  50% {
+    opacity: var(--star-base, 0.6);
+  }
+}
+
+/* The four bright ones pulse a little and turn very slowly, which makes the cross glint
+   catch rather than sit there. */
+.star-glint {
+  animation: glint 5.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes glint {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Two layers, two speeds. The difference between them is what reads as depth. */
+.cloud-layer {
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* The two durations are deliberately not multiples of each other. If they were, the layers
+   would realign on a regular beat and the sky would visibly repeat. */
+.cloud-far {
+  animation-duration: 110s;
+}
+
+.cloud-near {
+  animation-duration: 67s;
+}
+
+/* Exactly one tile, which is why the loop has no seam. The clouds are drawn twice, 1200
+   apart, so the frame at -1200 and the frame at 0 are the same picture: the second copy has
+   simply taken the first copy's place. Any distance other than the tile width and the two
+   copies stop lining up, which shows up as a jump every cycle. */
+@keyframes drift {
+  from {
+    transform: translateX(-1200px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* A very slow zoom on the slide that is showing.
+   This is the part that makes a banner feel like a slider rather than a picture. Only the
+   active slide animates, so the transform restarts each time a destination comes round. */
+.hero-slide.is-active .scenery {
+  animation: slow-zoom 9s ease-out forwards;
+}
+
+@keyframes slow-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+.hero-loading .scenery {
+  opacity: 0.55;
+}
+
+.hero-arrow {
+  position: absolute;
+  top: 34%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.hero-copy {
+  cursor: pointer;
+}
+
+.hero-arrow:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.hero-arrow.prev {
+  left: 18px;
+}
+
+.hero-arrow.next {
+  right: 18px;
+}
+
+.hero-dots {
+  position: absolute;
+  bottom: 196px;
+  left: 0;
+  right: 0;
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  /* Right aligned rather than centred: the centre of the banner is where the copy and then
+     the search card sit, and dots in the middle of the artwork read as stray marks. */
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hero-dot {
+  width: 30px;
+  height: 3px;
+  border: 0;
+  padding: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+}
+
+.hero-dot.active {
+  background: #fff;
+}
+
+/* ============================================================ search card */
+
+.search-overlay {
+  position: relative;
+  /* Pulls the card up over the banner, which is the shape every airline site uses. */
+  margin-top: -80px;
+  z-index: 5;
+}
+
+.search-card {
+  background: var(--card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+.search-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: var(--line-2);
+}
+
+.search-tabs button {
+  flex: none;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 15px 22px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.search-tabs button.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  background: var(--card);
+}
+
+.search-body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.search-grid {
+  display: grid;
+  /* From, swap, to, then date, cabin, time. The swap column is deliberately narrow. */
+  grid-template-columns: 1fr 40px 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.search-field.wide {
+  width: 100%;
+}
+
+.search-field > span {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.search-field input,
+.search-field select {
+  font: inherit;
+  font-size: 15px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+}
+
+.search-field input:focus,
+.search-field select:focus {
+  outline: 3px solid rgba(11, 92, 171, 0.18);
+  border-color: var(--brand);
+}
+
+.search-swap {
+  height: 42px;
+  width: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--brand);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.search-swap:hover {
+  border-color: var(--brand);
+  background: #f2f7fc;
+}
+
+.btn-search {
+  align-self: flex-start;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 32px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-search:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+.btn-search:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.search-examples {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.search-examples button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.search-examples button:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+/* ============================================================ flight results */
+
+.flight-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flight-row {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 84px 1fr 84px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  box-shadow: var(--shadow-1);
+}
+
+.flight-row:hover {
+  border-color: #cfdae6;
+  box-shadow: var(--shadow-2);
+}
+
+.flight-when {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flight-when strong {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.flight-when span {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* The route line. A dot, a rule and a small plane is the universal shorthand. */
+.flight-leg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.leg-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 90px;
+}
+
+.leg-line .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+
+.leg-line .line {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.plane-mark {
+  color: var(--brand);
+  flex: none;
+}
+
+.leg-note {
+  font-size: 11.5px;
+}
+
+.flight-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flight-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.flight-buy {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fare {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* ============================================================ destination cards */
+
+.dest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.dest-card {
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--card);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  box-shadow: var(--shadow-1);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.dest-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-2);
+}
+
+.dest-art {
+  position: relative;
+  height: 148px;
+  overflow: hidden;
+}
+
+.dest-body {
+  padding: 13px 15px 15px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dest-body h3 {
+  font-size: 16px;
+}
+
+.dest-fare {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.dest-fare strong {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================================ strips */
+
+.promise-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+  padding: 28px 26px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.promise {
+  display: flex;
+  gap: 12px;
+}
+
+.promise svg {
+  color: var(--good);
+  flex: none;
+  margin-top: 2px;
+}
+
+.promise h4 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.promise p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.signin-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 26px 28px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(120deg, var(--navy), var(--navy-2));
+  color: #fff;
+}
+
+.signin-strip h3 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.signin-strip p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.signin-strip .muted {
+  color: #bed0e2;
+}
+
+.signin-strip button {
+  background: #fff;
+  color: var(--navy);
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  padding: 11px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ============================================================ footer */
+
+.site-footer {
+  margin-top: 56px;
+  background: var(--navy);
+  color: #b9cade;
+  font-size: 13.5px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 30px;
+  padding-top: 42px;
+  padding-bottom: 34px;
+}
+
+.footer-grid h4 {
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.footer-grid a,
+.footer-grid span {
+  display: block;
+  padding: 5px 0;
+  color: #b9cade;
+}
+
+.footer-grid a:hover {
+  color: #fff;
+}
+
+.footer-base {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 18px;
+  padding-bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+
+.footer-base .muted {
+  color: #7d95ae;
+}
+
+/* ============================================================ generic page pieces */
+
+.page {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 34px 20px 72px;
+}
+
+.page-title {
+  font-size: 25px;
+  margin-bottom: 8px;
+}
+
+.page-lead {
+  color: var(--muted);
+  margin: 0 0 26px;
+  max-width: 72ch;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-1);
+}
+
+.card h3 {
+  margin-bottom: 14px;
+  font-size: 16px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 130px;
+}
+
+.field label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid rgba(11, 92, 171, 0.18);
+  border-color: var(--brand);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 18px;
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+button.secondary {
+  background: #fff;
+  color: var(--brand);
+}
+
+button.quiet {
+  background: #fff;
+  color: var(--ink-2);
+  border-color: var(--line);
+}
+
+button.quiet:hover:not(:disabled) {
+  background: var(--line-2);
+  color: var(--ink);
+  border-color: #cfdae6;
+}
+
+button.danger {
+  background: #fff;
+  color: var(--bad);
+  border-color: #e6c4c4;
+}
+
+button.danger:hover:not(:disabled) {
+  background: var(--bad-bg);
+  border-color: var(--bad);
+}
+
+/* ---------- table ---------- */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+th {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* The booking somebody has just made. A tinted row is enough: the eye finds it without a
+   banner shouting at them. */
+tr.row-new td {
+  background: var(--good-bg);
+}
+
+/* ---------- badges ---------- */
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--line-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.badge.good {
+  background: var(--good-bg);
+  color: var(--good);
+  border-color: #cfe6da;
+}
+
+.badge.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: #f0dcc4;
+}
+
+.badge.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border-color: #eccccc;
+}
+
+/* ---------- notices ---------- */
+
+.notice {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.notice.error {
+  background: var(--bad-bg);
+  border-color: #eccccc;
+  color: var(--bad);
+}
+
+.notice.warn {
+  background: var(--warn-bg);
+  border-color: #f0dcc4;
+  color: var(--warn);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 13px;
+}
+
+/* ---------- trace ----------
+   Styled like a log rather than like content: monospace, tight, visually secondary.
+   A passenger does not need it. Anybody learning how the system works does. */
+
+.trace {
+  background: #0d1826;
+  color: #d7e1ea;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  overflow-x: auto;
+}
+
+.trace-step {
+  display: flex;
+  gap: 12px;
+}
+
+.trace-step .name {
+  color: #7fd1b9;
+  min-width: 180px;
+}
+
+.trace-step .where {
+  color: #8aa2b8;
+  min-width: 155px;
+}
+
+.trace-step .detail {
+  color: #b9c6d2;
+  white-space: pre-wrap;
+}
+
+/* ---------- chat ---------- */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 470px;
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 2px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  max-width: 76%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.bubble.me {
+  align-self: flex-end;
+  background: var(--brand);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble.bot {
+  align-self: flex-start;
+  background: var(--line-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+/* ---------- itinerary ---------- */
+
+.day {
+  border-left: 3px solid var(--brand);
+  padding: 2px 0 2px 15px;
+  margin-bottom: 18px;
+}
+
+.day h4 {
+  margin-bottom: 7px;
+  font-size: 15px;
+}
+
+.day ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ---------- auth ---------- */
+
+.auth {
+  max-width: 400px;
+  margin: 56px auto;
+}
+
+.auth .card {
+  padding: 28px;
+}
+
+.auth h2 {
+  margin-bottom: 5px;
+  font-size: 21px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ============================================================ assistant widget
+   The floating button and its panel, bottom right on every page.
+
+   A courier or bank site puts its help here and people look for it here, so the position is
+   not a design choice so much as a convention worth obeying. */
+
+.widget-launcher {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 60;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  /* A gradient rather than a flat fill, because the robot inside is shaded and a flat
+     button behind a shaded object looks like a sticker on a disc. */
+  background: linear-gradient(150deg, #1a6fc4, var(--brand-dark));
+  box-shadow: 0 8px 22px rgba(8, 40, 76, 0.4), 0 2px 6px rgba(8, 40, 76, 0.3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.widget-launcher:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(8, 40, 76, 0.45);
+}
+
+.widget-launcher .robot-mark {
+  /* Nudged up a hair. Optically centring a head-and-shoulders shape means putting the head
+     in the middle, not the bounding box. */
+  margin-top: -2px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.widget-launcher.is-open .robot-mark {
+  transform: rotate(-8deg);
+}
+
+/* Two rings expanding outwards. They run three times and stop: a button that pulses forever
+   in the corner of the screen is an irritation, and one that never moves is missed. */
+.launcher-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(79, 195, 247, 0.7);
+  animation: launcher-pulse 2.4s ease-out 3;
+  pointer-events: none;
+}
+
+.launcher-ring.delayed {
+  animation-delay: 1.2s;
+}
+
+@keyframes launcher-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+/* ---------- panel ---------- */
+
+.widget-panel {
+  position: fixed;
+  right: 22px;
+  bottom: 96px;
+  z-index: 60;
+  width: 372px;
+  max-width: calc(100vw - 32px);
+  max-height: min(560px, calc(100vh - 140px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(10, 37, 64, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: widget-in 200ms ease-out;
+}
+
+@keyframes widget-in {
+  from {
+    opacity: 0;
+    /* Rises out of the launcher rather than fading in the middle of nowhere. */
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.widget-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 14px;
+  background: linear-gradient(150deg, var(--navy-2), var(--navy));
+  color: #fff;
+}
+
+.widget-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.widget-title strong {
+  font-size: 14.5px;
+}
+
+.widget-title span {
+  font-size: 12px;
+  color: #a8c0d8;
+}
+
+.widget-x {
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  padding: 5px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.widget-x:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.widget-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  /* A floor, so a one line conversation does not collapse the panel to a sliver. */
+  min-height: 190px;
+}
+
+.widget-log .bubble {
+  max-width: 88%;
+  font-size: 14px;
+  padding: 9px 12px;
+}
+
+.widget-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 14px 12px;
+}
+
+.widget-quick button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.widget-quick button:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: #f4f8fc;
+}
+
+.widget-form {
+  display: flex;
+  gap: 8px;
+  padding: 11px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.widget-form input {
+  font-size: 14px;
+  padding: 9px 11px;
+}
+
+.widget-form button {
+  flex: none;
+  width: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.widget-expand {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--line-2);
+  color: var(--brand);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.widget-expand:hover {
+  background: #e6edf4;
+  color: var(--brand-dark);
+}
+
+/* ---------- the robot ---------- */
+
+/* The antenna light and the eyes are the only moving parts. A robot whose whole head bobs
+   looks like a toy; one that just blinks looks like it is waiting for you. */
+.robot-antenna {
+  animation: antenna 2.8s ease-in-out infinite;
+}
+
+@keyframes antenna {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Squashed vertically for a moment. Long gaps between blinks, because a fast blink reads as
+   a flicker rather than an eye. */
+.robot-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 6.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@media (max-width: 520px) {
+  .widget-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: 88px;
+  }
+
+  .widget-launcher {
+    right: 16px;
+    bottom: 16px;
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ============================================================ responsive */
+
+@media (max-width: 900px) {
+  .search-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* The swap button has nowhere sensible to sit in a two column stack. */
+  .search-swap {
+    display: none;
+  }
+
+  .flight-row {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 16px;
+  }
+
+  .flight-leg {
+    order: 3;
+    grid-column: 1 / -1;
+  }
+
+  .flight-meta {
+    order: 4;
+    grid-column: 1 / -1;
+  }
+
+  .flight-buy {
+    order: 5;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 760px) {
+  /* Nothing may push the document wider than the screen.
+     Two things did: the nine column bookings table, and the two search tabs side by side.
+     Both are now allowed to scroll inside their own box, which is the rule for any wide
+     content on a small screen. A page that scrolls sideways as a whole is the single most
+     obvious sign of an unfinished site. */
+  .table-wrap,
+  .search-tabs,
+  .trace {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .card,
+  .page,
+  .search-card,
+  .app-body {
+    min-width: 0;
+  }
+
+  .search-tabs button {
+    white-space: nowrap;
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .main-nav {
+    display: none;
+  }
+
+  /* Opened by the hamburger: a panel under the bar rather than a full screen takeover,
+     which keeps the page behind it visible and the mental model simple. */
+  .main-nav.open {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: absolute;
+    top: 62px;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow-2);
+    padding: 6px 20px 14px;
+  }
+
+  .main-nav.open a {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-2);
+  }
+
+  .hero {
+    height: 440px;
+  }
+
+  .hero-copy {
+    bottom: 168px;
+  }
+
+  .search-overlay {
+    margin-top: -56px;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-search {
+    align-self: stretch;
+  }
+
+  .topbar-note {
+    display: none;
+  }
+
+  .hero-arrow {
+    display: none;
+  }
+}
+
+/* Anyone who has asked for less motion gets none of it. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-track,
+  .dest-card {
+    transition: none;
+  }
+
+  /* Everything in the banner holds still. The aircraft and its trail are hidden outright
+     rather than frozen mid flight, where the trail would sit on screen as a stray line. */
+  .hero-plane {
+    display: none;
+  }
+
+  .hero-slide.is-active .scenery,
+  .cloud-layer,
+  .contrail,
+  .plane-body,
+  .star,
+  .star-glint,
+  .window-flicker,
+  .launcher-ring,
+  .robot-antenna,
+  .robot-eyes,
+  .widget-panel {
+    animation: none;
+  }
+
+  /* The attention rings are removed rather than frozen, where they would sit on the page as
+     two static circles around the button. */
+  .launcher-ring {
+    display: none;
+  }
+
+  /* The stars themselves stay. The setting asks for less motion, not less scenery, and a
+     still star field is exactly as legible as a twinkling one. */
+  .star {
+    opacity: var(--star-base, 0.6);
+  }
+}
