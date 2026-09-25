@@ -1,31 +1,11 @@
 /**
- * Everything that moves in the sky: the stars, the clouds and the aeroplane.
- *
- * This is the one piece of pure decoration in the application, so it is worth being clear
- * about why it earns its place. An airline home page that is completely still reads as a
- * template. One slow aircraft tracking across the sky reads as an airline. The difference
- * costs about forty lines and no network requests.
- *
- * The restraint is the design. Twenty two seconds for a single crossing, a trail that draws
- * itself in behind the aircraft and fades, and clouds that take most of a minute to drift
- * past. Anything faster competes with the fare for attention, which is the opposite of what
- * a banner is for.
- *
- * It is drawn with SVG animateMotion rather than CSS offset-path. Both work; animateMotion
- * is declarative, needs no JavaScript ticking, and follows the same path element the trail
- * is drawn from, so the aircraft cannot drift off its own contrail.
+ * Decorative sky animation containing stars, clouds, an aircraft, and a contrail. Slow CSS
+ * animation keeps movement secondary to the banner content and requires no image requests.
  */
 import Stars from './Stars.jsx'
 
 export default function HeroPlane() {
-  // The flight path. A shallow arc rather than a straight line, because a level crossing
-  // looks like a sprite sliding across a background, and a curve reads as distance.
-  //
-  // It also has to stay in the top third of the sky, and that constraint was learned the
-  // hard way. The first curve started at y 300 and flew the aircraft straight through the
-  // destination name. The banner crops to roughly y 68 through 451 of this coordinate space
-  // and the headline occupies about 235 to 350, so anything below 220 collides with the one
-  // piece of text on the page that matters.
+  // A shallow arc in the upper third avoids the destination headline and suggests depth.
   const path = 'M -120 178 C 260 110, 700 80, 1340 44'
 
   return (
@@ -76,15 +56,8 @@ export default function HeroPlane() {
       />
 
       {/*
-        The aircraft travels by CSS offset-path, not by SVG animateMotion.
-        animateMotion is the more obvious tool and it was the first attempt. It also did not
-        work: the contrail kept sweeping across, because that is a CSS dash animation, while
-        the aircraft sat at the origin. SMIL and CSS are two separate animation engines and
-        only one of them was running.
-
-        offset-path puts both on the same engine, driven by the same duration, so they cannot
-        drift apart. The path is handed over as a custom property rather than repeated in the
-        stylesheet, which keeps one copy of the curve for the aircraft and its own trail.
+        CSS offset-path keeps the aircraft and CSS-animated contrail on the same animation
+        engine and duration. The path stays in one variable shared by the aircraft and trail.
       */}
       <g
         className="plane-body"
@@ -118,21 +91,13 @@ function PlaneSilhouette() {
 }
 
 /**
- * Two layers of cloud at different speeds, looping without a seam.
- *
- * The first version animated each layer from one side to the other and started again, which
- * meant the sky emptied out and then the clouds reappeared in a block. The fix is the oldest
- * one in scrolling backgrounds: draw the set twice, one tile apart, and translate by exactly
- * one tile. As the first copy leaves on the right the second arrives from the left, and the
- * frame at the end of the cycle is pixel identical to the frame at the start, so there is
- * nothing to see when it restarts.
+ * Two cloud layers move at different speeds. Each layer repeats one viewBox width apart so
+ * translating one full tile produces a seamless loop.
  *
  * The tile is the full 1200 of the viewBox. Any other number and the two copies would not
  * line up, which is the one thing that has to be exact here.
  *
- * The speed difference between the layers is still what reads as depth. It also means the
- * two patterns slide past each other and the combined sky never obviously repeats, even
- * though each layer does.
+ * Different layer speeds provide depth and reduce visible repetition.
  */
 function Clouds() {
   return (
@@ -155,10 +120,7 @@ function Clouds() {
 }
 
 /**
- * One tile of cloud, 1200 wide.
- *
- * Positions are spread across the whole tile rather than clustered, because a gap wider than
- * about a third of the tile is long enough to notice as an empty sky.
+ * One 1200-unit cloud tile with positions distributed to avoid large empty gaps.
  */
 function CloudTile({ near = false }) {
   const clouds = near

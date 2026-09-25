@@ -8,12 +8,7 @@ public final class AgentViews {
     }
 
     /**
-     * One line of the trace: which agent or tool ran, and where.
-     * <p>
-     * This is what makes the whole system explainable. Without it a multi agent answer is a
-     * paragraph you either believe or do not, and the demo is unteachable. With it you can
-     * point at the screen and say "the supervisor called the rebooking agent, which called a
-     * tool on the MCP server".
+     * One trace entry identifying the agent or tool, execution type, location, and detail.
      */
     public record TraceStep(String name, String kind, String ranOn, String detail) {
     }
@@ -27,10 +22,7 @@ public final class AgentViews {
     }
 
     /**
-     * What the disruption supervisor returns.
-     * <p>
-     * Deliberately not just a String. The supervisor coordinates three sub agents, and the
-     * useful part of the demo is seeing what each one contributed, not only the final summary.
+     * Structured disruption result containing each specialist contribution and final summary.
      */
     public record DisruptionOutcome(
             String pnr,

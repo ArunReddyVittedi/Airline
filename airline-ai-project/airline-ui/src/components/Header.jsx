@@ -3,12 +3,7 @@ import { useState } from 'react'
 import { clearSession } from '../api.js'
 
 /**
- * Two tiers, which is how airline sites are built and it is not for decoration.
- *
- * The top strip is the account: who you are, your tier, signing in and out. The bar under it
- * is the journey: book, your trips, help. Keeping them apart means the navigation does not
- * grow every time an account feature is added, and the thing a returning passenger wants
- * (My trips) sits in the same place whether or not they are signed in.
+ * Two-tier navigation separating account controls from booking and support journeys.
  */
 export default function Header({ user, onSignedOut }) {
   const [menuOpen, setMenuOpen] = useState(false)

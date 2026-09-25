@@ -6,19 +6,9 @@ import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 /**
- * The specialists the disruption supervisor delegates to.
- * <p>
- * All four live in one file because they only make sense together, and because reading them
- * side by side is how the delegation becomes obvious. Each one is narrow on purpose: an agent
- * with a single job writes a better answer about that job than a general assistant does about
- * everything, and a narrow agent can actually be tested.
- * <p>
- * The mechanism to notice is {@code outputKey}. When an agent finishes, its answer is written
- * into the shared AgenticScope under that key, and the next agent takes it as a parameter of
- * the same name. That is the whole of agent to agent communication here: not agents calling
- * each other directly, but a shared scratchpad the supervisor passes around. It is far easier
- * to debug than direct calls, because at any point you can print the scope and see exactly
- * what each agent contributed.
+ * Specialists used by the disruption supervisor. Each agent has one responsibility and
+ * shares its result through an {@code outputKey} in the AgenticScope. Later agents consume
+ * matching named parameters, keeping delegation state explicit and traceable.
  */
 public final class DisruptionAgents {
 
@@ -26,13 +16,7 @@ public final class DisruptionAgents {
     }
 
     /**
-     * Establishes the facts before anybody offers advice.
-     * <p>
-     * This agent exists because the other two kept guessing without it. Asked to help a
-     * disrupted passenger, a single agent would assume the flight was cancelled when it was
-     * merely delayed, and offer a refund the passenger was not entitled to. Making one agent
-     * responsible for what actually happened, and putting its answer in the scope, means the
-     * other two reason from a fact rather than from the passenger's phrasing.
+     * Establishes booking and flight facts before advisory agents run.
      */
     public interface SituationAgent {
 
@@ -133,11 +117,7 @@ public final class DisruptionAgents {
     }
 
     /**
-     * Turns three internal notes into something a passenger would want to receive.
-     * <p>
-     * Worth having as its own agent. The other three write for the airline, in the flat
-     * register of a system that has established some facts, and a passenger whose flight was
-     * just cancelled needs a human sentence first.
+     * Converts the specialist outputs into a concise passenger-facing message.
      */
     public interface PassengerMessageAgent {
 

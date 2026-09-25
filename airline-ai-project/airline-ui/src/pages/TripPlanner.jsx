@@ -3,11 +3,7 @@ import { api } from '../api.js'
 import { Notice, Trace } from '../components/Ui.jsx'
 
 /**
- * Three agents in a fixed order: research, then flights, then the itinerary.
- *
- * Worth comparing with the disruption desk. Same idea of agents cooperating, completely
- * different coordination, and the only reason is that these three steps never change order.
- * No supervisor means no model call spent deciding what to do next.
+ * Trip-planning UI for the fixed research, flight-advice, and itinerary sequence.
  */
 export default function TripPlanner() {
   const [form, setForm] = useState({

@@ -219,11 +219,7 @@ export default function MyTrips() {
 }
 
 /**
- * A flight that has not departed yet.
- *
- * Cancel used to be offered on past bookings too. It was not broken, it was just useless:
- * the quote came back "the flight has already departed, so the fare is not refundable" and
- * the passenger had spent two clicks to be told no.
+ * Returns whether the flight remains eligible for future-trip actions.
  */
 function isUpcoming(booking) {
   return new Date(booking.departureTime) > new Date()

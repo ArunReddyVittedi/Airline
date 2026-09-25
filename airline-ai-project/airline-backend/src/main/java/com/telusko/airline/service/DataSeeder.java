@@ -34,15 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Puts enough data in the database for every feature to be demonstrable on a clean checkout.
- * <p>
- * The dates are the part worth explaining. Flights are generated relative to today rather
- * than written as fixed dates, because a seeder with hard coded dates works on the afternoon
- * it was written and produces an empty search forever afterwards. Everything here is
- * "tomorrow", "in three days", "in two weeks", so the app is always demonstrable.
- * <p>
- * Runs once. Every block checks whether its table is already populated, so restarting the
- * app does not add a second copy of the fleet.
+ * Seeds the data required by application features on a clean database. Flight dates are
+ * relative to the current date so search and disruption scenarios remain current. Each
+ * section checks for existing rows to keep restarts idempotent.
  */
 @Component
 public class DataSeeder implements ApplicationRunner {
@@ -73,16 +67,9 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     /**
-     * Deliberately not {@code @Transactional}.
-     * <p>
-     * It was, and that was a bug. Each repository call opens its own transaction, which is
-     * what a seeder wants: five independent steps, and a failure in one does not undo the
-     * four before it. Wrapping the whole thing in one transaction also breaks in a way that
-     * is genuinely hard to read, because {@link BookingService#book} is itself transactional
-     * and joins the outer one. When it throws, it marks that shared transaction rollback
-     * only. Catching the exception here does not undo the mark, so the seeder appears to
-     * finish and then the commit fails with UnexpectedRollbackException, pointing at a line
-     * that had nothing to do with it.
+     * Runs seed stages in independent repository transactions. An outer transaction would
+     * allow a caught failure from {@link BookingService#book} to mark the complete seed run
+     * rollback-only.
      */
     @Override
     public void run(ApplicationArguments args) {
@@ -95,18 +82,9 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     /**
-     * Makes sure there is always a cancelled and a delayed flight still in the future.
-     * <p>
-     * Seed data goes stale, and this is the way it goes stale that actually hurts. The
-     * disruption desk is the centrepiece of this application, and it is demonstrated against
-     * a flight the seeder cancelled. Run the app four days later and that flight has departed:
-     * the supervisor now reports a flight that is gone, the rebooking agent has nothing
-     * sensible to offer, and the best feature in the project looks broken for a reason
-     * nobody would guess from the screen.
-     * <p>
-     * So rather than cancelling a flight once and hoping, this runs on every start and
-     * re-points the disruption at a future flight whenever the old one has gone. It does
-     * nothing at all on the common path, which is a database seeded today.
+     * Maintains at least one future cancelled flight and one future delayed flight. When the
+     * seeded disruption expires, a later flight is selected so the disruption workflow keeps
+     * valid operational data.
      */
     private void refreshDisruption() {
         LocalDateTime now = LocalDateTime.now();
@@ -115,17 +93,8 @@ public class DataSeeder implements ApplicationRunner {
         Flight delayed = earliestFuture(FlightStatus.DELAYED, now);
 
         if (cancelled == null || delayed == null) {
-            // Five days out, not three, and never the morning departure.
-            //
-            // Both parts are there because of a demo that broke. The first version cancelled
-            // the earliest flight three days ahead, which is exactly the 07:15 the headline
-            // search asks for: "cheapest morning flight to Goa in three days" then returned
-            // nothing, because the only morning flight that day had just been cancelled by
-            // the thing meant to make the app more demonstrable.
-            //
-            // Five days still leaves a passenger comfortably inside the refund window, and
-            // skipping the morning slot keeps the search demo and the disruption demo out of
-            // each other's way.
+            // Select an afternoon or evening flight at least five days out. This preserves
+            // morning search results while keeping the booking inside the refund window.
             List<Flight> candidates = bookableAfter(now.plusDays(5).toLocalDate().atStartOfDay());
 
             if (candidates.isEmpty()) {
@@ -149,13 +118,8 @@ public class DataSeeder implements ApplicationRunner {
             }
         }
 
-        // Outside the block above on purpose, and this is the fix for a real failure.
-        //
-        // The first version only booked the passenger on the run that did the cancelling. A
-        // run that cancelled the flight and then died before booking anyone left a permanent
-        // dead end: every later start saw a cancelled flight in the future, decided there was
-        // nothing to do, and the disruption desk had no passenger to work with. Doing it every
-        // time is idempotent and cannot get stuck half done.
+        // Ensure the cancelled flight has a passenger on every startup. This remains
+        // idempotent if a prior seed run stopped after updating the flight status.
         if (cancelled != null) {
             bookDemoPassengerOnto(cancelled);
         }
@@ -174,24 +138,15 @@ public class DataSeeder implements ApplicationRunner {
                 .filter(f -> f.getDepartureTime().isAfter(from))
                 .filter(f -> f.getOrigin().getCode().equals("BOM"))
                 .filter(f -> f.getDestination().getCode().equals("GOI"))
-                // Leave the morning departures alone. They are what the headline search demo
-                // asks for, and a cancelled one makes that search come back empty.
+                // Preserve morning departures for the default natural-language search.
                 .filter(f -> f.getDepartureTime().getHour() >= 12)
                 .sorted(java.util.Comparator.comparing(Flight::getDepartureTime))
                 .toList();
     }
 
     /**
-     * Puts the demo passenger on the cancelled flight, unless somebody is on it already.
-     * <p>
-     * Cancelling a flight nobody is booked on gives the disruption desk nothing to work with,
-     * which is the same dead end from the other direction.
-     * <p>
-     * The check counts bookings on that one flight rather than walking a passenger's bookings
-     * and reading each flight's status. That version was the obvious one to write and it threw
-     * LazyInitializationException on startup: the seeder is not transactional, so a Flight
-     * reached through Booking is a proxy with no session behind it. Asking the repository a
-     * direct question never loads a proxy at all.
+     * Adds a seeded passenger to the cancelled flight when it has no confirmed bookings.
+     * A direct repository query avoids loading lazy flight proxies outside a transaction.
      */
     private void bookDemoPassengerOnto(Flight cancelled) {
         AppUser ramesh = users.findByEmail("ramesh@example.com").orElse(null);
@@ -233,8 +188,7 @@ public class DataSeeder implements ApplicationRunner {
             return;
         }
 
-        // The password is the same for all three and printed nowhere. It is in the README,
-        // which is the right place for a demo credential.
+        // Shared local-development password documented in the README.
         String password = passwordEncoder.encode("telusko123");
 
         AppUser ramesh = new AppUser("ramesh@example.com", password, "Ramesh Kumar", Role.USER);
@@ -250,11 +204,8 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     /**
-     * A small fleet on six routes over the next three weeks.
-     * <p>
-     * One flight is cancelled and one is delayed on purpose, so the disruption supervisor has
-     * something real to work with the moment the app starts. Without them the flagship
-     * feature would have nothing to demonstrate until somebody remembered to cancel a flight.
+     * Seeds a small fleet across supported routes for the next three weeks, including one
+     * cancelled and one delayed flight for disruption handling.
      */
     private void seedFlights() {
         if (flights.count() > 0) {
@@ -360,11 +311,8 @@ public class DataSeeder implements ApplicationRunner {
     }
 
     /**
-     * Books each demo passenger onto a few flights, including the cancelled one.
-     * <p>
-     * Ramesh is deliberately on the cancelled flight. That is the booking to use when
-     * demonstrating the disruption supervisor, and it means the demo works on a clean
-     * database with no setup steps.
+     * Seeds passenger bookings, including a cancelled flight for Ramesh and a delayed flight
+     * for Priya, so disruption handling is available on a clean database.
      */
     private void seedBookings() {
         if (bookings.count() > 0) {

@@ -20,12 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The passenger assistant, wrapped in the things a controller should not have to think about:
- * metrics, the trace, and what to do when the model is unavailable.
- * <p>
- * The pattern to notice is that the agent itself never handles failure. {@link TravelAssistant}
- * is a clean interface with a prompt on it; deciding that OpenAI being down should produce an
- * apology rather than a 500 is an application decision and belongs here.
+ * Application wrapper for the passenger assistant, including metrics, traces, source
+ * metadata, guardrail responses, and degraded behavior when the model is unavailable.
  */
 @Service
 public class AssistantService {
@@ -34,7 +30,7 @@ public class AssistantService {
 
     private static final String FEATURE = "travel-assistant";
 
-    /** Where LangChain4j's wrapper text ends and our guardrail's own sentence begins. */
+    /** Marker separating LangChain4j exception text from the guardrail response. */
     private static final String GUARDRAIL_MESSAGE_MARKER = "failed with this message:";
 
     private static final String GENERIC_REFUSAL =
@@ -61,11 +57,7 @@ public class AssistantService {
     }
 
     /**
-     * Answers a question, with the trace and the sources attached.
-     * <p>
-     * The trace is not decoration. It is what turns "the assistant said my bag is 15 kg" into
-     * something a support engineer can check, and in a classroom it is the difference between
-     * a paragraph appearing by magic and a system somebody can follow.
+     * Answers a question with tool-execution trace entries and retrieved sources.
      */
     public AssistantReply ask(String passengerEmail, String question) {
         try {
@@ -120,11 +112,8 @@ public class AssistantService {
     }
 
     /**
-     * Turns tool executions into trace lines, labelling where each tool ran.
-     * <p>
-     * The {@code ranOn} column is the part worth showing a class. A local tool and an MCP
-     * tool look identical to the model, and the only way to tell them apart afterwards is to
-     * ask the MCP client what it offers, which is what happens here.
+     * Converts tool executions into trace entries and distinguishes local tools from MCP
+     * tools using the remote server's tool inventory.
      */
     private List<TraceStep> traceOf(List<ToolExecution> executions) {
         if (executions == null || executions.isEmpty()) {
@@ -161,10 +150,8 @@ public class AssistantService {
     }
 
     /**
-     * Asks the MCP server for its tool names, once, and remembers the answer.
-     * <p>
-     * Cached because this is only used to label a trace, and a round trip to a subprocess on
-     * every request to work out a label is not a trade worth making.
+     * Caches MCP tool names used to label trace entries without a subprocess round trip on
+     * every request.
      */
     private Set<String> remoteToolNames() {
         Set<String> cached = mcpToolNames;
@@ -182,8 +169,7 @@ public class AssistantService {
             client.listTools().forEach(tool -> names.add(tool.name()));
             return mcpToolNames = names;
         } catch (RuntimeException ex) {
-            // The ops server is not running. Everything still works; the trace just says
-            // "this app" for every tool, which is a cosmetic loss and not worth a failure.
+            // Preserve assistant availability if remote tool labels cannot be loaded.
             log.debug("Could not list MCP tools for the trace: {}", ex.getMessage());
             return mcpToolNames = Set.of();
         }

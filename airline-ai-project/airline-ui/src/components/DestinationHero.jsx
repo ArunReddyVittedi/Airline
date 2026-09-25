@@ -10,7 +10,7 @@ const MAX_SLIDES = 4
 /**
  * The rotating banner on the home page.
  *
- * Every slide is a destination we genuinely fly to, with the lowest fare actually on sale
+ * Every slide is a served destination, with the lowest fare currently on sale
  * fetched from the API. That matters more than it sounds: a banner is a promise, and a
  * beautiful slide advertising a route with no seats is the fastest way to make a site feel
  * fake. If the schedule changes, the banner changes with it, because there is nothing here

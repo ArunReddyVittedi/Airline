@@ -5,12 +5,8 @@ const GREETING =
   'Hello. I can help with baggage rules, your bookings, refunds and check in. What do you need?'
 
 /**
- * The conversation, shared by the full Assistant page and the floating widget.
- *
- * Both need the same things: a message list, a box to type in, and a send that can either
- * stream or wait. Only their surroundings differ, so the surroundings are all that lives in
- * the components. Two copies of this logic would drift within a week, and the streaming
- * reducer in particular is the sort of code you only want to get right once.
+ * Shared assistant conversation state for the full page and floating widget, including
+ * blocking and streaming send paths.
  */
 export default function useAssistantChat() {
   const [messages, setMessages] = useState([{ who: 'bot', text: GREETING }])

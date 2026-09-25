@@ -16,13 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Proves the wiring holds together, without spending a single token.
- * <p>
- * Everything asserted here is something that silently breaks at runtime rather than at
- * compile time. An {@code @AiService} with a misspelled bean name in its EXPLICIT wiring
- * compiles perfectly and then fails on the first request; a supervisor whose sub agents are
- * not beans fails when a passenger clicks the button. This test moves both of those failures
- * to the build.
+ * Validates runtime wiring for AI services, agentic systems, RAG, and MCP without model calls.
  * <p>
  * Needs Postgres, which spring-boot-docker-compose starts, so Docker has to be running.
  * It does not need a real OpenAI key: the models are built from the properties and never
@@ -59,10 +53,7 @@ class ContextLoadsTest {
     private McpClient opsMcpClient;
 
     /**
-     * The four AI services exist as beans.
-     * <p>
-     * This is the assertion that catches a typo in {@code tools = {"flightTools"}}. EXPLICIT
-     * wiring resolves bean names, and a name that does not exist is not a compile error.
+     * Validates bean-name resolution used by explicit AI-service wiring.
      */
     @Test
     void aiServicesAreWired() {
@@ -84,12 +75,7 @@ class ContextLoadsTest {
     }
 
     /**
-     * The MCP server started, handshook, and offered its tools.
-     * <p>
-     * Four is the number {@code OpsTools} declares, and asserting the exact count is
-     * deliberate: adding a tool to the server and forgetting to mention it in the docs is a
-     * failure worth being told about. This also proves the jar was built and the main class
-     * in its manifest is correct, which is the single most common way this module breaks.
+     * Validates the packaged MCP server entry point, handshake, and documented tool set.
      */
     @Test
     void mcpServerIsReachableAndOffersItsTools() {

@@ -8,11 +8,8 @@ import lombok.Setter;
 import java.time.Instant;
 
 /**
- * The readable copy of everything that gets indexed for RAG.
- * <p>
- * The vector table holds chunks and embeddings, which nobody can review. Keeping the source
- * article in a normal table means an admin can read what the assistant is answering from,
- * edit it, and re-index. Without this the knowledge base is a black box you can only add to.
+ * Readable source article for RAG indexing. Administrators can review and edit the source
+ * text before rebuilding its derived chunks and embeddings.
  */
 @Entity
 @Table(name = "knowledge_article")

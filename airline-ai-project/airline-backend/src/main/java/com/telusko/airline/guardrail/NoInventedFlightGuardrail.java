@@ -15,17 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Checks that every flight number in the answer is a flight that exists.
- * <p>
- * This is the guardrail that earns its place. A model that has just seen five real flights
- * will occasionally produce a sixth, and a fabricated flight number is the single most
- * damaging thing this app could say: a passenger writes it down, arrives at the airport and
- * finds the flight was never real. No amount of prompting reduces that to zero.
- * <p>
- * Note that it reprompts rather than failing. A rejected answer with the reason attached
- * usually comes back correct on the retry, because the model is being told exactly what it
- * got wrong. Failing outright would send the passenger an error for a problem the model is
- * perfectly capable of fixing.
+ * Validates every flight number in an answer against the repository. Unknown numbers trigger
+ * a bounded reprompt with validation details instead of reaching the passenger.
  */
 @Component
 public class NoInventedFlightGuardrail implements OutputGuardrail {
@@ -33,7 +24,7 @@ public class NoInventedFlightGuardrail implements OutputGuardrail {
     private static final Logger log = LoggerFactory.getLogger(NoInventedFlightGuardrail.class);
 
     /**
-     * Our flight numbers are two letters and three digits, for example TL401.
+     * Flight numbers use two letters followed by three digits, for example TL401.
      * <p>
      * Word boundaries matter here. Without them this matches the "TL401" inside a longer
      * token and reports numbers the answer never really contained.

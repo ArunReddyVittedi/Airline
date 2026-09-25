@@ -1,32 +1,20 @@
-# Started automatically by spring-boot-docker-compose when the backend boots.
-#
-# One Postgres holds both the business tables and the pgvector table, so there is a single
-# database to run for the whole project.
+# Started automatically by Spring Boot Docker Compose support. PostgreSQL stores both
+# business data and pgvector embeddings.
 services:
   postgres:
-    # pgvector is an extension and stock Postgres does not ship it. This image is plain
-    # Postgres 16 with the extension binary included, which is why init/schema.sql only has
-    # to enable it rather than install it.
+    # PostgreSQL 16 image with the pgvector extension available to init/schema.sql.
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: airline
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: telusko
     ports:
-      # 5433 on the host, not 5432.
-      #
-      # A lot of machines already have a Postgres of their own on 5432, and this container
-      # would then fail to start with "port is already allocated" before the app ever gets
-      # a chance to connect. Nothing needs updating when this changes:
-      # spring-boot-docker-compose reads the mapped port off the container and hands Spring
-      # the right JDBC url, so the properties file never has to know.
+      # Host port 5433 avoids conflicts with a PostgreSQL instance on the default port.
       - "5433:5432"
     volumes:
       - airline-db:/var/lib/postgresql/data
     healthcheck:
-      # Spring waits for this before it builds the DataSource. Without a healthcheck it
-      # connects the moment the container exists, which is a few seconds before Postgres is
-      # actually accepting connections.
+      # Delay DataSource initialization until PostgreSQL accepts connections.
       test: ["CMD-SHELL", "pg_isready -U postgres -d airline"]
       interval: 5s
       timeout: 3s

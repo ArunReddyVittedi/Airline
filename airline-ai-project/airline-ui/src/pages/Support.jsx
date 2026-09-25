@@ -3,12 +3,8 @@ import { api } from '../api.js'
 import { Badge, Notice, When } from '../components/Ui.jsx'
 
 /**
- * Support tickets, classified as they arrive.
- *
- * The reason the category and priority are shown back to the passenger is worth noting. Most
- * systems hide their routing. Showing it, along with the sentence the agent gave for its
- * decision, means somebody who raised an urgent wheelchair request can see it was read as
- * SPECIAL_ASSISTANCE and URGENT, and stop wondering whether anyone noticed.
+ * Support-ticket submission and history. The assigned category, priority, and triage reason
+ * make automated routing visible to the passenger.
  */
 export default function Support() {
   const [tickets, setTickets] = useState([])

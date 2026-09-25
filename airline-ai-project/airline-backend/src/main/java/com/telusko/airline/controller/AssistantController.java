@@ -28,7 +28,7 @@ public class AssistantController {
         this.currentUser = currentUser;
     }
 
-    /** The blocking answer, with the trace and sources. This is what the demo uses. */
+    /** Returns a complete answer with trace steps and retrieved sources. */
     @PostMapping("/ask")
     public AssistantReply ask(@Valid @RequestBody AskRequest request) {
         return assistantService.ask(currentUser.requireEmail(), request.question());

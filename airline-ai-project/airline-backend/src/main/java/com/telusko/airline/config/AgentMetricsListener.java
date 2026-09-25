@@ -12,16 +12,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Times each agent inside a multi agent run.
- * <p>
- * The scope tells you afterwards which agents ran and what they said, but not how long any of
- * them took, so this listens instead. It is the metric that makes a slow supervisor
- * diagnosable: a twelve second run is almost always one sub agent doing all the waiting, and
- * without a per agent timer the only way to find which is to read a transcript and guess.
- * <p>
- * Attached once, to the supervisor and to the sequence.
- * {@link #inheritedBySubagents()} returns true so every specialist underneath is covered
- * without having to remember to add the listener to each new one.
+ * Records per-agent latency within supervisor and sequence runs. The listener is inherited
+ * by sub-agents so new specialists are measured automatically.
  */
 @Component
 public class AgentMetricsListener implements AgentListener {
@@ -59,18 +51,14 @@ public class AgentMetricsListener implements AgentListener {
         log.warn("Agent {} failed: {}", error.agentName(), error.error().getMessage());
     }
 
-    /** Sub agents are covered automatically, which is the whole point of attaching it once. */
+    /** Apply the listener to sub-agents automatically. */
     @Override
     public boolean inheritedBySubagents() {
         return true;
     }
 
     /**
-     * Removes the start time as it reads it.
-     * <p>
-     * Without the remove this map grows for the lifetime of the process, one entry per agent
-     * invocation ever made. That is a slow leak rather than a fast one, which is the kind
-     * that reaches production.
+     * Removes each start time after recording to keep the map bounded.
      */
     private void record(String agentId, String agentName, boolean success) {
         Long start = startedAt.remove(agentId);

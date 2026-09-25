@@ -20,15 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Runs the trip planner sequence and parses the itinerary into days the UI can render.
- * <p>
- * The parsing at the bottom of this file is worth being honest about. Asking three agents to
- * cooperate and then reading the last one's output with a text parser feels crude, and the
- * alternative was worse: making the itinerary agent return a structured record meant it also
- * had to obey a JSON schema while composing prose, and the writing got noticeably flatter.
- * Letting it write naturally and parsing a simple, prompted format gave better itineraries.
- * When parsing fails the whole text is returned as one day, so a passenger never loses the
- * plan over a formatting slip.
+ * Runs the trip-planning sequence and parses its prompted text format into UI itinerary days.
+ * Unparseable output is returned as a single day instead of being discarded.
  */
 @Service
 public class TripPlanService {
@@ -53,9 +46,7 @@ public class TripPlanService {
         int days = clampDays(request.days());
         LocalDate departure = LocalDate.now().plusWeeks(2);
 
-        // The keys have to match the parameter names on the agent methods. That is how the
-        // sequence feeds each agent, and a typo here shows up as a MissingArgumentException
-        // rather than a wrong answer, which is the better failure of the two.
+        // Keys must match the named agent parameters used by the sequence.
         Map<String, Object> input = new LinkedHashMap<>();
         input.put("originCity", request.originCity());
         input.put("destinationCity", request.destinationCity());
@@ -115,9 +106,8 @@ public class TripPlanService {
         for (String line : notes.split("\n")) {
             String lower = line.toLowerCase();
 
-            // Named explicitly, or carrying a temperature. The first version also matched
-            // on " c" for Celsius, which quietly picked the line about Portuguese churches
-            // and put it in the weather box. A degree needs a digit in front of it.
+            // Match explicit weather terms or a numeric temperature; require a digit before
+            // a Celsius marker to avoid unrelated words ending in "c".
             if (lower.contains("weather") || lower.contains("monsoon")
                     || lower.matches(".*\\d+\\s*(to\\s*\\d+\\s*)?(degrees|c\\b).*")) {
                 return line.replaceFirst("^[-*\\s]+", "").replace("**", "").trim();
@@ -129,9 +119,8 @@ public class TripPlanService {
     /**
      * Reads the "Day 1: Title" format the itinerary agent was asked to produce.
      * <p>
-     * Everything that is not a day heading and not blank becomes an activity of the current
-     * day. That is forgiving on purpose: bullets, dashes and plain lines all work, because
-     * the exact bullet character is not worth a failed request.
+     * Nonblank lines beneath a day heading become activities. Bullets, dashes, and plain
+     * lines are accepted.
      */
     private static List<ItineraryDay> parseDays(String itinerary, int expectedDays) {
         if (itinerary == null || itinerary.isBlank()) {
@@ -168,8 +157,7 @@ public class TripPlanService {
             days.add(new ItineraryDay(dayNumber, title, List.copyOf(activities)));
         }
 
-        // The model wrote something we could not read as days. Better to show the passenger
-        // the plan as one block than to show them nothing.
+        // Preserve unparseable model output as a single itinerary block.
         if (days.isEmpty()) {
             return List.of(new ItineraryDay(1, "Your trip", List.of(itinerary.trim())));
         }

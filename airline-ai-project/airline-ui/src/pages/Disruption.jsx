@@ -3,16 +3,8 @@ import { api } from '../api.js'
 import { Badge, Notice, Trace, When } from '../components/Ui.jsx'
 
 /**
- * The disruption desk, and the page to demonstrate first.
- *
- * One click sends a PNR to a supervisor agent. The supervisor asks the situation agent what
- * happened, and depending on the answer consults the rebooking and compensation agents, then
- * has a fourth agent write the passenger's message. Each column below is a different agent,
- * and the trace at the bottom shows the order the supervisor chose.
- *
- * Run it against a healthy booking as well. The supervisor should find no disruption and
- * stop after one agent, which is the more interesting result of the two: it is proof the
- * delegation is a real decision and not a script.
+ * Disruption workflow UI. It submits a PNR to the supervisor and displays the situation,
+ * rebooking, compensation, passenger-message, and execution-trace outputs.
  */
 export default function Disruption() {
   const [bookings, setBookings] = useState([])

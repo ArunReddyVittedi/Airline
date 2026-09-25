@@ -54,9 +54,7 @@ public class FlightTools {
 
         LocalDate departure = parseDate(date);
         if (departure == null) {
-            // An empty list is a better answer than an exception. The model reads this as
-            // "nothing found" and asks the passenger for the date, which is what we want.
-            // A thrown exception would come back as a tool error and derail the conversation.
+            // An empty result allows the model to request a valid date without a tool error.
             return List.of();
         }
 

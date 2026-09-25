@@ -20,9 +20,7 @@
     <properties>
         <java.version>17</java.version>
 
-        <!-- The core is GA at 1.18.1. The Spring starters, the MCP module, pgvector and the
-             agentic module ship as 1.18.1-beta28. Import the BOM once and never type a version
-             on a langchain4j dependency again. -->
+        <!-- The BOM aligns LangChain4j dependency versions. -->
         <langchain4j.version>1.18.1</langchain4j.version>
     </properties>
 
@@ -65,8 +63,7 @@
         </dependency>
 
         <!-- ==================== LangChain4j ==================== -->
-        <!-- Gives us the OpenAI ChatModel, StreamingChatModel and EmbeddingModel beans
-             straight from application.properties. -->
+        <!-- Configures OpenAI chat, streaming, and embedding models from application properties. -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-open-ai-spring-boot-starter</artifactId>
@@ -99,8 +96,7 @@
             <artifactId>langchain4j-agentic</artifactId>
         </dependency>
 
-        <!-- MCP client. There is no MCP starter, so we declare the plain artifact and build
-             the beans ourselves in McpConfig. -->
+        <!-- MCP client beans are configured explicitly in McpConfig. -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-mcp</artifactId>
@@ -171,10 +167,7 @@
 
     <build>
         <plugins>
-            <!-- Lombok is an annotation processor, and declaring it as a dependency is not
-                 enough to run it. Without this path the getters are never generated and the
-                 build fails with "cannot find symbol: getStatus()" on every entity, which
-                 looks like the entity is wrong rather than the build. -->
+            <!-- Register Lombok explicitly as an annotation processor. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

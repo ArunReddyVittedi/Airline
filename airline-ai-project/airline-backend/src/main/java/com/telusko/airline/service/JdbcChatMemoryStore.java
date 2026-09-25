@@ -10,17 +10,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Chat memory that survives a restart.
- * <p>
- * The default {@code InMemoryChatMemoryStore} is a map, which is fine for a demo and wrong
- * for this app. Restart the backend and every passenger loses the conversation they were
- * halfway through, which in a support context means they have to explain their cancelled
- * flight a second time. One table fixes it.
- * <p>
- * The messages are stored as the JSON LangChain4j itself produces. Writing our own schema for
- * them was tempting and would have been a mistake: a stored {@code ToolExecutionRequest} has
- * to come back with its id intact or the next model call is rejected for referring to a tool
- * result that does not match. {@link ChatMessageSerializer} already gets that right.
+ * Persistent JDBC chat memory. Messages use LangChain4j's JSON representation so tool-call
+ * identifiers and other message metadata survive serialization unchanged.
  */
 @Component
 public class JdbcChatMemoryStore implements ChatMemoryStore {

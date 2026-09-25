@@ -1,5 +1,4 @@
-// The small pieces every page needs. Kept in one file because none of them is big enough
-// to be worth its own, and having them together makes the visual language obvious.
+// Shared presentational components used across pages.
 
 export function Notice({ kind = 'info', children }) {
   if (!children) return null
@@ -41,10 +40,7 @@ export function Duration({ minutes }) {
   return <span>{hours}h {minutes % 60}m</span>
 }
 
-// The panel that turns an agent run into something you can follow.
-//
-// Worth showing in the UI rather than hiding in a log. A passenger does not need it, but
-// anyone learning how the system works does, and so does anyone debugging a wrong answer.
+// Displays agent/tool execution steps and retrieved sources for inspection.
 export function Trace({ steps, sources }) {
   const hasSteps = steps && steps.length > 0
   const hasSources = sources && sources.length > 0

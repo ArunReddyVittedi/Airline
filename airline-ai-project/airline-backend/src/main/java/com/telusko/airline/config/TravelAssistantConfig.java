@@ -16,20 +16,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Builds the travel assistant by hand, because its guardrails have dependencies.
- * <p>
- * The other three agents use {@code @AiService} and are a single annotation each, which is
- * the nicer way to write one. This one cannot, and the reason is specific rather than
- * stylistic: {@code @OutputGuardrails} takes a class and LangChain4j instantiates it through
- * a no argument constructor, with no Spring involved.
+ * Builds the travel assistant explicitly because its output guardrail has Spring-managed
+ * dependencies. {@code @OutputGuardrails} accepts a class that LangChain4j instantiates
+ * through a no-argument constructor without Spring.
  * {@link NoInventedFlightGuardrail} needs the flight repository to check whether a flight
  * number is real, so that reflection fails with {@code NoSuchMethodException: <init>()} on
- * the first request. {@code AiServices.builder()} takes guardrail <em>instances</em>, so the
- * beans Spring already built can be handed straight in.
- * <p>
- * Everything else here is what the annotation would have done anyway, only visible. That is
- * arguably a fair trade for the front door of the application: the tool list, the memory,
- * the retrieval and both guardrails are all in one readable place.
+ * request. {@code AiServices.builder()} accepts the injected guardrail instances instead.
  */
 @Configuration
 public class TravelAssistantConfig {
@@ -56,8 +48,7 @@ public class TravelAssistantConfig {
 
         return AiServices.builder(TravelAssistant.class)
                 .chatModel(chatModel)
-                // Needed for the Flux returning method. Without it, calling chatStream
-                // fails at runtime rather than at startup, which is a worse place to learn.
+                // Required by the Flux-returning chatStream method.
                 .streamingChatModel(streamingChatModel)
                 .chatMemoryProvider(chatMemoryProvider)
                 .retrievalAugmentor(retrievalAugmentor)

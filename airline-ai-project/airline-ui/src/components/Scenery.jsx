@@ -1,14 +1,8 @@
 /**
  * Destination artwork, drawn rather than photographed.
  *
- * An airline home page wants a big picture of somewhere you want to be, and there is no photo
- * library in this project. The options were a stock photo URL, which breaks the moment the
- * network does and puts somebody else's licensing in our repo, or drawing the places.
- *
- * Drawing them turned out better than expected. Each scene is layered SVG with a per
- * destination palette, so a beach reads as a beach and Srinagar reads as mountains in snow,
- * and it renders instantly with nothing to load. It also scales to any tile size without
- * going soft, which a 1600px photo scaled into a 260px card does not.
+ * Layered SVG scenes avoid external image dependencies and licensing metadata. Destination
+ * palettes distinguish the scenes while preserving resolution at hero and card sizes.
  *
  * The same component draws the full width hero and the small destination cards. Only the
  * viewBox aspect changes.
@@ -57,8 +51,7 @@ const PALETTES = {
 /**
  * Which scene each airport gets.
  *
- * Keyed by IATA code, because that is what the API returns and it is stable. A code we have
- * no scene for falls back to the city skyline, which is true of most airports.
+ * Keyed by the IATA codes returned by the API. Unknown codes use the city skyline.
  */
 const SCENE_BY_AIRPORT = {
   GOI: 'beach',
@@ -79,13 +72,8 @@ export default function Scenery({ airportCode, variant = 'hero', className = '' 
   const scene = sceneFor(airportCode)
   const palette = PALETTES[scene]
 
-  // Both variants share one coordinate space, and CSS decides the box. The card used to
-  // declare its own smaller viewBox, which meant the crop landed on the top left corner of
-  // the drawing: every card was empty sky with a sun in it.
-  //
-  // The anchor is the difference that matters. A hero is wide and shallow, so it crops to
-  // the middle and keeps the horizon. A card is nearly square, so it anchors to the bottom
-  // and keeps the beach or the skyline rather than the sky above them.
+  // Both variants share one coordinate space. The hero centers its wide crop; cards anchor
+  // to the bottom to retain the beach or skyline.
   const gradientId = `sky-${scene}-${variant}`
   const anchor = variant === 'hero' ? 'xMidYMid slice' : 'xMidYMax slice'
 
@@ -137,16 +125,12 @@ function Beach({ p }) {
     <>
       <Sun p={p} cx={905} cy={172} r={42} />
 
-      {/* The horizon sits high on purpose. The search panel covers the lower third of the
-          banner, so a beach drawn near the bottom of the frame is a beach nobody sees: the
-          first version showed palm fronds with their trunks hidden behind the panel. */}
+      {/* Keep the horizon above the search panel and the palm trunks visible. */}
       <rect x="-100" y="318" width="1500" height="390" fill={p.water} />
       <path d="M-100 342 Q 300 330 700 346 T 1400 338 V 700 H -100 Z" fill={p.waterLight} opacity="0.5" />
       <path d="M-100 372 Q 400 360 820 378 T 1400 370 V 700 H -100 Z" fill={p.waterLight} opacity="0.38" />
 
-      {/* Sand. Raising the horizon to clear the search panel was right, and the first attempt
-          went too far: the water filled the frame and read as a wall of teal. This sits it
-          back down so there is more sky than sea, which is how a beach photograph is framed. */}
+      {/* Sand bounds the water band while retaining more sky than sea. */}
       <path d="M-100 414 Q 400 396 900 418 T 1400 408 V 700 H -100 Z" fill={p.sand} />
 
       {/* Two palms, rooted in the sand and clear of the panel. Curved trunks, because a
@@ -224,12 +208,7 @@ function City({ p }) {
 }
 
 /**
- * The lit windows of one tower.
- *
- * The first version drew a flat rectangle per window at one of two opacities, and the result
- * looked exactly like what it was: a grid of squares. What makes a window read as a room
- * with a lamp on is not the pane, it is the light escaping around it, so each lit window is
- * drawn twice, once blurred and once sharp. The blurred copy is the spill.
+ * Lit tower windows use a blurred layer beneath sharp panes to create a light-spill effect.
  *
  * Three brightness tiers rather than lit and unlit, because a real tower has a few rooms
  * blazing, plenty on a dim lamp, and a lot of people already out. Unlit panes still get a
@@ -321,8 +300,7 @@ function Metro({ p }) {
         [468, 262, 50], [532, 310, 84]].map(([x, top, w], i) => (
         <g key={i}>
           <rect x={x} y={top} width={w} height={365 - top} fill={p.accent} opacity="0.85" />
-          {/* These were bare silhouettes. Mumbai from the sea wall at dusk is a wall of
-              lit windows, so they get the same treatment as the skyline scene. */}
+          {/* Apply the skyline window treatment to the Mumbai waterfront blocks. */}
           <Windows x={x} top={top} w={w} seed={i * 53 + 7} bottom={365} />
         </g>
       ))}

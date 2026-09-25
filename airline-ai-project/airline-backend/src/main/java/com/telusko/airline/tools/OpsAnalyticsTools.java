@@ -17,10 +17,8 @@ import java.util.Map;
 /**
  * Airline numbers, exposed to the admin assistant as tools.
  * <p>
- * Same reasoning as {@link FlightTools}: this is not RAG. "How much did we make this week" is
- * a question about arithmetic, and a model reading a sample of booking documents would guess
- * at the total and sound certain about it. Each tool runs a real aggregate query, so the
- * numbers the admin sees are the numbers in the database.
+ * Uses aggregate queries rather than RAG for revenue, route, disruption, and queue metrics.
+ * Administrative answers therefore reflect current database values.
  * <p>
  * Only reachable through the admin endpoint, which is guarded by {@code hasRole("ADMIN")}.
  * Revenue and load factor are not passenger facing data.

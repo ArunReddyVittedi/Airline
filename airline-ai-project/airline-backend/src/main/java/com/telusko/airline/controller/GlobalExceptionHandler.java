@@ -57,14 +57,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * A date the caller typed wrong, a missing query parameter, or a value that will not
-     * convert to the type the controller wanted.
-     * <p>
-     * All three used to reach the caller as a bare 403 with an empty body, which is the
-     * least helpful thing this application could possibly have said. The reason is worth
-     * knowing: an unhandled exception makes Spring forward to /error, and if that path is
-     * secured the forward is refused. Opening /error fixed the status; these handlers are
-     * what make the message useful.
+     * Maps invalid dates, missing parameters, and conversion failures to readable 400
+     * responses. SecurityConfig permits the error redispatch used by Spring.
      */
     @ExceptionHandler({
             DateTimeParseException.class,
@@ -101,8 +95,8 @@ public class GlobalExceptionHandler {
     /**
      * The model could not produce an acceptable answer, even after the retries.
      * <p>
-     * 502 is the honest status. The failure is upstream of us: the guardrail worked, and what
-     * it kept rejecting was the model's output.
+     * A 502 identifies the model output as the failed upstream dependency while preserving
+     * the successful guardrail decision.
      */
     @ExceptionHandler(OutputGuardrailException.class)
     public ResponseEntity<ApiError> outputRejected(OutputGuardrailException ex) {

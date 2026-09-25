@@ -11,13 +11,9 @@ const SUGGESTIONS = [
 ]
 
 /**
- * The chat window, with a switch between streaming and blocking.
- *
- * Both are here because the difference is worth seeing. Streaming feels immediate and cannot
- * be checked by an output guardrail, since the first tokens are already on screen before the
- * last one is written. Blocking waits, and comes back with the trace, the token count and a
- * guardrail that has verified every flight number in the answer. That trade is real, and it
- * is not obvious until you watch both.
+ * Chat window with streaming and blocking modes. Streaming prioritizes responsiveness but
+ * cannot use an output guardrail; blocking returns trace data and token usage after validating
+ * flight numbers in the complete response.
  */
 export default function Assistant() {
   const [streaming, setStreaming] = useState(true)

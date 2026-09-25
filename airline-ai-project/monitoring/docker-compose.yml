@@ -1,8 +1,5 @@
-# Monitoring, kept in its own compose file on purpose.
-#
-# The backend's docker-compose.yml is started automatically by spring-boot-docker-compose and
-# holds only Postgres, because that is the one thing the app cannot run without. Prometheus
-# and Grafana are optional, so starting them is a separate deliberate command:
+# Optional Prometheus and Grafana services are separate from the backend's required
+# PostgreSQL Compose service. Start them from the project directory with:
 #
 #   docker compose -f monitoring/docker-compose.yml up -d
 services:
@@ -22,8 +19,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Anonymous admin access, because this is a local teaching stack and a login prompt
-      # in the middle of a class demo is friction with no benefit. Never do this anywhere real.
+      # Local-only anonymous administration. Configure authentication before exposing Grafana.
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
       GF_AUTH_DISABLE_LOGIN_FORM: "true"

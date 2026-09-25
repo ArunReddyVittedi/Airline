@@ -6,11 +6,8 @@ import com.telusko.airline.service.DisruptionService;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * The multi agent flow, and the endpoint worth demonstrating first.
- * <p>
- * One POST, and behind it a supervisor decides which of four specialists to consult, each one
- * reading what the last one wrote. The response carries the trace, so what came back is not
- * a paragraph you have to trust but a run you can follow.
+ * Multi-agent disruption endpoint. A supervisor selects from four specialists and returns
+ * their contributions with the final passenger response.
  */
 @RestController
 @RequestMapping("/api/disruption")
@@ -25,12 +22,8 @@ public class DisruptionController {
     }
 
     /**
-     * Handles one booking.
-     * <p>
-     * The PNR is the only input. Everything else, including whether there is any disruption
-     * at all, is for the agents to establish. Run it against a booking on a healthy flight
-     * as well: the supervisor should consult the situation agent, find nothing wrong, and
-     * stop without spending calls on rebooking or compensation.
+     * Handles one booking. The agents determine whether a disruption exists and stop after
+     * situation assessment when the flight is operating normally.
      */
     @PostMapping("/{pnr}")
     public DisruptionOutcome handle(@PathVariable String pnr) {

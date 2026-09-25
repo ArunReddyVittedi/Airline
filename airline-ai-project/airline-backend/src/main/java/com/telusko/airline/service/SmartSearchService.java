@@ -92,11 +92,8 @@ public class SmartSearchService {
     }
 
     /**
-     * Echoes back what we understood.
-     * <p>
-     * This matters more than it looks. When a search returns nothing, the passenger needs to
-     * know whether there are no flights or whether we misread the sentence, and those are
-     * completely different problems with completely different next steps.
+     * Describes the interpreted search criteria so empty results can be distinguished from
+     * an incorrectly interpreted request.
      */
     private static String describe(SearchIntent intent, LocalDate date) {
         StringBuilder text = new StringBuilder("Flights from ")

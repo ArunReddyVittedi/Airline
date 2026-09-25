@@ -3,10 +3,7 @@ import { api } from '../api.js'
 import { Badge, Notice, Trace, When } from '../components/Ui.jsx'
 
 /**
- * Each preset is a short label and the question it actually asks.
- *
- * The first version put the whole question on the button and sliced it at 28 characters,
- * which ended mid word with an ellipsis and looked like a rendering fault.
+ * Short labels and their full operations-analysis questions.
  */
 const QUESTIONS = [
   { label: 'Revenue', ask: 'What did we make this week and how many bookings was that?' },

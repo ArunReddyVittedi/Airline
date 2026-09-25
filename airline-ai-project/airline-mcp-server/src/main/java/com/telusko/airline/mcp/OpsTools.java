@@ -10,15 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The tools this MCP server offers.
- * <p>
- * Everything here is information the airline does not own. Live weather, airport congestion
- * and the gate feed all come from somewhere else, and that is exactly why they sit behind MCP
- * rather than in the backend. The backend owns bookings; this server owns the outside world.
- * <p>
- * The data is hard coded so the project runs with no API keys beyond OpenAI. Swapping any of
- * these method bodies for a real HTTP call changes nothing about the backend, which is the
- * point of a protocol: the client never learns where the answer came from.
+ * External operations tools exposed through MCP. Deterministic local data avoids additional
+ * API credentials while preserving the same client boundary as a live provider.
  */
 public class OpsTools {
 

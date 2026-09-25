@@ -17,16 +17,8 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * The MCP client, pointed at our own operations server.
- * <p>
- * Two beans and that is the whole setup. There is no MCP Spring Boot starter, so unlike the
- * chat model these are not auto configured, which is actually the clearer way to learn it:
- * everything MCP does in this app is visible in this one file.
- * <p>
- * Worth being clear about what happens here, because it surprises everyone the first time.
- * Nobody starts the ops server. Building the client runs {@code java -jar} and the server
- * becomes a child process of this application, talking over its stdin and stdout. No port,
- * no URL, nothing listening. Stop the backend and the server dies with it.
+ * Configures an MCP client for the bundled operations server. The backend launches the
+ * server as a child {@code java -jar} process and communicates over standard input/output.
  */
 @Configuration
 @ConditionalOnProperty(name = "airline.mcp.enabled", havingValue = "true", matchIfMissing = true)
@@ -35,12 +27,7 @@ public class McpConfig {
     private static final Logger log = LoggerFactory.getLogger(McpConfig.class);
 
     /**
-     * Ceiling on what one MCP tool result may add to a prompt, in characters.
-     * <p>
-     * Somebody else's server decides how much JSON it sends back. Ours is well behaved, but
-     * the whole point of MCP is that tomorrow this client might point at a server we did not
-     * write. One unbounded list is all it takes to blow the context window, and that arrives
-     * as a 400 from OpenAI rather than anything that names the real culprit.
+     * Maximum MCP tool-result length included in a prompt, in characters.
      */
     private static final int MAX_TOOL_RESULT = 20_000;
 
@@ -48,27 +35,21 @@ public class McpConfig {
     public McpClient opsMcpClient(@Value("${airline.mcp.server-jar}") String serverJar) {
         McpTransport transport = StdioMcpTransport.builder()
                 .command(List.of("java", "-jar", serverJar))
-                // Logs the JSON-RPC frames at DEBUG. Off by default in the properties file,
-                // and the first thing to turn on when a tool call misbehaves.
+                // Make JSON-RPC frames available at DEBUG level.
                 .logEvents(true)
                 .build();
 
         return DefaultMcpClient.builder()
                 .key("airline-ops")
                 .transport(transport)
-                // The default is 30 seconds, which is generous for a local jar and not
-                // generous at all on a cold machine where the JVM has to start first.
+                // Allow time for a cold JVM to start the child process.
                 .initializationTimeout(Duration.ofSeconds(60))
                 .build();
     }
 
     /**
-     * Turns the server's tools into tools an {@code @AiService} can call.
-     * <p>
-     * {@code failIfOneServerFails(false)} is the line that keeps the airline running. If the
-     * ops server is not built, or crashes, the trip planner loses its weather tool and every
-     * other feature carries on. The alternative is a backend that will not start because a
-     * subprocess is missing, which is not a trade any airline would accept.
+     * Exposes MCP server tools to AI services. MCP failure degrades dependent features
+     * without preventing unrelated backend features from starting.
      */
     @Bean
     public ToolProvider mcpToolProvider(McpClient opsMcpClient) {

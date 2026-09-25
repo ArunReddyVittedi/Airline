@@ -20,20 +20,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Builds the multi agent systems.
- * <p>
- * These are not {@code @AiService} interfaces, and it is worth saying why. An AI Service is
- * one interface backed by one model call chain. An agentic system is several of those wired
- * together with a coordination strategy, and the strategy has to be chosen in code. So the
- * sub agents are built with {@link AgenticServices} here and handed to Spring as beans, which
- * gives us the best of both: the composition is explicit and readable, and controllers still
- * just inject what they need.
- * <p>
- * Notice how differently the two systems are put together. The disruption handler is a
- * supervisor, because which specialist to consult depends on what the first one found. The
- * trip planner is a fixed sequence, because it is the same three steps every single time.
- * Using a supervisor for the second would mean paying a model to make a decision that has
- * already been made.
+ * Builds the agentic systems and exposes their components as Spring beans. Disruption uses
+ * supervisor routing because later steps depend on the assessed situation; trip planning
+ * uses a fixed sequence because its stages always run in the same order.
  */
 @Configuration
 public class AgentConfig {
@@ -107,16 +96,13 @@ public class AgentConfig {
     /**
      * The supervisor. Reads the request, decides which specialists to call, and in what order.
      * <p>
-     * Two settings here are the difference between a demo and a runaway bill.
-     * <p>
      * {@code maxAgentsInvocations(6)} is the circuit breaker. A supervisor that is not
      * satisfied with an answer will call another agent, and a confused one will keep going.
-     * Six is enough for all four specialists plus two retries, and it means the worst case is
-     * bounded rather than whatever the model feels like.
+     * Six permits all four specialists plus two retries while bounding request cost.
      * <p>
      * {@code SUMMARY} makes the supervisor compose a final answer from everything the sub
      * agents produced. {@code LAST} would return only the final agent's output, which sounds
-     * equivalent and is not: if the supervisor decides to skip the message writing agent
+     * not equivalent: if the supervisor skips the message-writing agent
      * because the flight turned out to be on time, LAST returns a rebooking note instead of
      * an answer to the passenger.
      */
@@ -129,8 +115,7 @@ public class AgentConfig {
                                                 AgentMetricsListener agentMetricsListener) {
         return AgenticServices.supervisorBuilder()
                 .chatModel(chatModel)
-                // Attached once. The listener inherits down to every sub agent, so each of
-                // the four gets its own timer without being wired individually.
+                // The listener is inherited by each sub-agent for individual timing.
                 .listener(agentMetricsListener)
                 .subAgents(situationAgent, rebookingAgent, compensationAgent, passengerMessageAgent)
                 .maxAgentsInvocations(6)
@@ -197,8 +182,7 @@ public class AgentConfig {
      * <p>
      * Untyped because the inputs are a handful of named values rather than a fixed signature,
      * and {@code invokeWithAgenticScope} hands back both the result and the scope. The scope
-     * is what the controller turns into the trace the UI shows, so the whole run is
-     * explainable rather than a paragraph you either trust or do not.
+     * is converted into the execution trace returned to the UI.
      */
     @Bean
     public UntypedAgent tripPlanner(DestinationResearchAgent destinationResearchAgent,

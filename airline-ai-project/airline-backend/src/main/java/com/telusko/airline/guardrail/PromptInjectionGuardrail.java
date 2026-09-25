@@ -12,18 +12,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Stops the obvious attempts to talk the assistant out of its own rules.
- * <p>
- * The system message already tells the assistant not to reveal other passengers' bookings.
- * A system message is a request: the model usually follows it and sometimes does not. This is
- * Java code that runs before the model, so it always runs. That difference is the entire
- * reason guardrails exist.
- * <p>
- * Be honest about what this does and does not do. Pattern matching catches the lazy attacks,
- * which is most of what a public chatbot actually receives, and it will not stop a determined
- * one. The real protection is that {@code BookingTools} never accepts an email as a parameter,
- * so even a successful injection can only ask about the caller's own data. This guardrail is
- * the cheap outer layer, not the security model.
+ * Rejects common instruction-override patterns before model invocation. Pattern matching is
+ * an outer guardrail; passenger isolation is enforced by {@code BookingTools}, which accepts
+ * no caller-supplied email address.
  */
 @Component
 public class PromptInjectionGuardrail implements InputGuardrail {
@@ -31,9 +22,7 @@ public class PromptInjectionGuardrail implements InputGuardrail {
     private static final Logger log = LoggerFactory.getLogger(PromptInjectionGuardrail.class);
 
     /**
-     * Phrases whose only purpose is to override instructions. Kept deliberately narrow.
-     * A broad list blocks real questions, and a support bot that refuses honest passengers
-     * is worse than one that occasionally sees a silly prompt.
+     * Narrow set of instruction-override phrases to limit false positives on valid questions.
      */
     private static final List<Pattern> OVERRIDE_ATTEMPTS = List.of(
             Pattern.compile("ignore (all |any |the )?(previous|above|prior|earlier) (instructions?|rules?|prompts?)",
@@ -48,11 +37,8 @@ public class PromptInjectionGuardrail implements InputGuardrail {
                     Pattern.CASE_INSENSITIVE));
 
     /**
-     * Someone asking about a booking that is not theirs, by naming an email.
-     * <p>
-     * Blocked rather than allowed and ignored, because a passenger who types this deserves a
-     * clear "I can only see your own bookings" instead of a vague answer that leaves them
-     * wondering whether it worked.
+     * Email addresses in prompts are rejected because booking tools are scoped to the
+     * authenticated passenger.
      */
     private static final Pattern OTHER_PERSONS_EMAIL =
             Pattern.compile("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}");
@@ -69,9 +55,7 @@ public class PromptInjectionGuardrail implements InputGuardrail {
     public InputGuardrailResult validate(UserMessage userMessage) {
         String text = userMessage.singleText();
 
-        // A very long question is either a paste of somebody's inbox or an attempt to bury
-        // an instruction under filler. Either way it is not a support question, and the
-        // length check is free compared with the tokens it saves.
+        // Bound prompt size before model invocation.
         if (text.length() > MAX_QUESTION_LENGTH) {
             return blocked("too_long",
                     "That message is too long for me to read. Could you ask it in a sentence or two?");
@@ -94,9 +78,7 @@ public class PromptInjectionGuardrail implements InputGuardrail {
     }
 
     /**
-     * {@code fatal} rather than {@code failure} on purpose. A failure lets the chain carry on
-     * to the next guardrail; there is nothing here worth carrying on for, and stopping
-     * immediately means the request costs nothing at all.
+     * Uses {@code fatal} to stop the guardrail chain and avoid a model call.
      */
     private InputGuardrailResult blocked(String reason, String messageForPassenger) {
         metrics.recordGuardrailBlock("prompt-injection", reason);

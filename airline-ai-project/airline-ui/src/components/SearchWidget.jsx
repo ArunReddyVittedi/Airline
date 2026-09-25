@@ -3,16 +3,8 @@ import { useState } from 'react'
 const CITIES = ['Mumbai', 'Delhi', 'Goa', 'Bengaluru', 'Chennai', 'Kolkata', 'Srinagar', 'Hyderabad']
 
 /**
- * The search panel that sits over the banner, the way every airline site does it.
- *
- * Two tabs, and the second one is the interesting half of this whole application. The first
- * is an ordinary form that runs a database query. The second sends a sentence to a model,
- * which reads it into the same parameters and runs the same query. Identical results from
- * both, which is the honest picture of what a language model adds to a feature like this: a
- * better front door, not a different answer.
- *
- * Presenting them as tabs rather than as two boxes side by side was deliberate. Side by side
- * looked like a demo. Tabs look like a product, and the comparison is still one click away.
+ * Banner search panel with structured and natural-language inputs. Both paths resolve to the
+ * same database-backed flight search.
  */
 export default function SearchWidget({ onSearch, onAsk, busy, initial }) {
   const [tab, setTab] = useState('form')

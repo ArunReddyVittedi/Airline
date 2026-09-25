@@ -41,12 +41,8 @@ public class FlightController {
     }
 
     /**
-     * The same search, from a sentence.
-     * <p>
-     * Worth comparing with the endpoint above during a demo. Identical results, identical
-     * query underneath, and the only difference is that the model read the sentence. That is
-     * the honest picture of what an LLM adds to a feature like this: a better front door,
-     * not a different answer.
+     * Runs the same database search after converting a natural-language request into
+     * structured search criteria.
      */
     @PostMapping("/search/natural")
     public FlightSearchResult naturalSearch(@Valid @RequestBody AskRequest request) {

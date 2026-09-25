@@ -54,9 +54,8 @@ public class AdminController {
     /**
      * Airline numbers in plain English.
      * <p>
-     * "What did we make this week and which route is busiest" is one question to a manager
-     * and two aggregate queries to a database. The agent bridges that, and because every
-     * figure comes from a tool it cannot round, extrapolate or flatter.
+     * Converts an operations question into database-backed aggregate tool calls. Reported
+     * figures come directly from tool results.
      */
     @PostMapping("/ask")
     public AssistantReply ask(@Valid @RequestBody AskRequest request) {

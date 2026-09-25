@@ -6,16 +6,8 @@ import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 /**
- * The trip planner, built as a fixed sequence rather than a supervisor.
- * <p>
- * This is the other half of the agent story, and the contrast with {@link DisruptionAgents}
- * is the lesson. Planning a trip always needs the same three steps in the same order:
- * research the destination, check what it costs to fly there, then write the itinerary. There
- * is nothing for a supervisor to decide, so paying a model to decide it would be waste.
- * <p>
- * A sequence is cheaper, faster and completely predictable. Reach for a supervisor only when
- * the right next step genuinely depends on what the previous step found, which is exactly the
- * case for disruption and exactly not the case here.
+ * Trip-planning agents executed as a fixed sequence: destination research, flight advice,
+ * then itinerary generation. The deterministic order avoids an unnecessary supervisor call.
  */
 public final class TripPlannerAgents {
 
@@ -23,12 +15,7 @@ public final class TripPlannerAgents {
     }
 
     /**
-     * What the destination is actually like. Retrieval, plus the ops server for weather.
-     * <p>
-     * The weather tool is an MCP tool, and that is deliberate. Climate is not something an
-     * airline owns, so it sits behind the protocol along with airport congestion and peak
-     * travel dates. Swap the ops server for a real weather API and nothing in this agent
-     * changes, which is the whole argument for MCP in one example.
+     * Destination research backed by retrieval and MCP weather and peak-travel tools.
      */
     public interface DestinationResearchAgent {
 
@@ -57,7 +44,7 @@ public final class TripPlannerAgents {
     }
 
     /**
-     * What it costs and when to fly. Real flights from the database, never invented.
+     * Flight and fare advice based on database-backed flight tools.
      */
     public interface FlightAdvisorAgent {
 
@@ -89,11 +76,8 @@ public final class TripPlannerAgents {
     }
 
     /**
-     * Writes the day by day plan from what the first two agents found.
-     * <p>
-     * No tools and no retrieval, which is the point of putting it last. By this stage
-     * everything factual is already in the scope, so this agent only has to write. Giving it
-     * tools as well would let it go back and contradict the flight advice it was handed.
+     * Writes the itinerary from the preceding agents' factual outputs without additional
+     * tools or retrieval.
      */
     public interface ItineraryAgent {
 

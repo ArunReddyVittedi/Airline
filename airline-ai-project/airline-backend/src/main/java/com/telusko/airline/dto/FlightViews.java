@@ -5,12 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * The shapes a flight takes on the way out of the app.
- * <p>
- * Grouped in one file because they are read together and none of them is big enough to be
- * worth its own. They are records rather than entities on purpose: a tool that returned a
- * {@code Flight} would drag lazy associations into JSON serialisation, and a model reading
- * that JSON would see Hibernate proxies instead of a departure time.
+ * Flight response records grouped by domain. Returning records instead of entities prevents
+ * lazy Hibernate associations from entering API and tool serialization.
  */
 public final class FlightViews {
 

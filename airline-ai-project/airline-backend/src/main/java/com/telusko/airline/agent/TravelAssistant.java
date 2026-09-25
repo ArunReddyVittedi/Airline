@@ -7,36 +7,23 @@ import dev.langchain4j.service.UserMessage;
 import reactor.core.publisher.Flux;
 
 /**
- * The passenger facing assistant. The front door of the whole application.
+ * Passenger-facing assistant with policy retrieval, local and MCP tools, per-passenger
+ * memory, and input/output guardrails.
  * <p>
- * It has everything attached at once, which is the point: retrieval for policy questions,
- * tools for anything about real flights and bookings, MCP tools for the outside world, memory
- * per passenger, and a guardrail on each side. A question like "my flight is cancelled, can I
- * get a refund and what about my checked bag" needs all of them in a single answer.
- * <p>
- * Unlike the other three agents, this interface carries no {@code @AiService} annotation. It
- * is built by hand in {@code TravelAssistantConfig}, and the reason is worth knowing before
- * you copy the annotation onto it.
- * <p>
- * {@code @InputGuardrails} and {@code @OutputGuardrails} take a <em>class</em>, and
+ * This interface is built in {@code TravelAssistantConfig} instead of using
+ * {@code @AiService}. {@code @InputGuardrails} and {@code @OutputGuardrails} take a class, and
  * LangChain4j instantiates it by reflection through a no argument constructor. Spring is not
- * consulted. Our output guardrail needs the flight repository to check whether a flight
+ * consulted. The output guardrail needs the flight repository to check whether a flight
  * number is real, so a no argument constructor cannot give it what it needs, and the
  * annotation fails at runtime with {@code NoSuchMethodException: <init>()}. Building the
- * service with {@code AiServices.builder()} lets us pass guardrail <em>instances</em> that
+ * service with {@code AiServices.builder()} accepts guardrail <em>instances</em> that
  * Spring has already injected.
  */
 public interface TravelAssistant {
 
     /**
-     * The rules the assistant works under.
-     * <p>
-     * Three of these lines exist because of something that went wrong without them. Asking
-     * for at most five results stops a tool returning a list big enough to blow the context
-     * window. Forbidding invented flight numbers is repeated here even though a guardrail
-     * enforces it, because a prompt that asks for the right behaviour needs fewer retries
-     * than a guardrail catching the wrong one. And saying "I do not know" has to be spelled
-     * out, or the model fills a silent retrieval with plausible baggage allowances.
+     * Assistant rules covering tool use, retrieval gaps, passenger isolation, output size,
+     * and response style. Prompt constraints reduce avoidable guardrail retries.
      */
     @SystemMessage("""
             You are the support assistant for Telusko Airlines.
@@ -60,16 +47,9 @@ public interface TravelAssistant {
     Result<String> chat(@MemoryId String passengerEmail, @UserMessage String question);
 
     /**
-     * The same conversation, streamed.
-     * <p>
-     * Streaming is about how fast the answer feels, not how much it costs. A tool calling
-     * chain can take six or seven seconds before the first word, and a passenger staring at
-     * a spinner assumes it is broken.
-     * <p>
-     * The trade is real and worth knowing: a streamed answer cannot be checked by an output
-     * guardrail, because the first tokens are already on their way to the browser by the time
-     * the last one is written. The UI uses this for the conversation and the blocking method
-     * above wherever the answer is stored or acted on.
+     * Streams the conversation for lower perceived latency. Output guardrails cannot validate
+     * a response after its initial tokens have already been sent, so stored or actionable
+     * responses use the blocking method.
      */
     @SystemMessage("""
             You are the support assistant for Telusko Airlines.

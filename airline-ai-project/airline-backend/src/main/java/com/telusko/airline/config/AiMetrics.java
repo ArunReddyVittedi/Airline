@@ -11,11 +11,8 @@ import java.util.function.Supplier;
 /**
  * Metrics for the AI features, recorded per feature rather than per model call.
  * <p>
- * Spring AI publishes its own {@code gen_ai.*} meters. LangChain4j does not, so everything
- * on this dashboard is something we chose to record. That turns out to be an advantage: the
- * names are ours, so they answer the questions an on call engineer actually asks. Not "is
- * OpenAI slow" but <em>which</em> feature broke, is retrieval still finding anything, and how
- * often an agent hands work to another agent.
+ * LangChain4j does not publish Spring AI's {@code gen_ai.*} meters, so application-specific
+ * metrics identify feature failures, retrieval outcomes, and agent handoffs.
  * <p>
  * Token counting lives in {@link TokenUsageListener}, because tokens are a property of a
  * model call and everything here is a property of a feature.
@@ -57,7 +54,7 @@ public class AiMetrics {
      * Times an AI feature and tags the outcome.
      * <p>
      * The exception is re-thrown untouched, so this only observes. Failures still land as
-     * {@code outcome=failure}, which matters because most of our callers catch the error and
+     * {@code outcome=failure}, which matters because most callers catch the error and
      * fall back. Without this the dashboard would show a healthy system while every answer
      * came from the fallback path.
      */
@@ -79,11 +76,7 @@ public class AiMetrics {
     }
 
     /**
-     * Times one agent within a multi agent run.
-     * <p>
-     * A supervisor run that takes twelve seconds tells you nothing on its own. Split by agent
-     * it usually turns out that one sub agent is doing all the waiting, and that is the one
-     * worth caching or dropping.
+     * Times one agent within a multi-agent run for per-stage latency analysis.
      */
     public void recordAgent(String agent, long millis, boolean success) {
         Timer.builder(AGENT_TIMER)
@@ -97,10 +90,8 @@ public class AiMetrics {
     /**
      * Records how much grounding a request actually got.
      * <p>
-     * This is the single most useful RAG signal. A retrieval that quietly returns nothing does
-     * not error. The assistant simply answers from general knowledge and starts inventing
-     * baggage allowances. A rising empty retrieval rate is how you find out that indexing
-     * broke, or that the score floor is too strict, before a passenger acts on a wrong answer.
+     * Empty retrievals do not raise an error, so this signal identifies indexing failures or
+     * an overly strict score floor.
      */
     public void recordRetrieval(String feature, int documentsFound) {
         DistributionSummary.builder(RETRIEVAL_DOCS)
@@ -121,9 +112,8 @@ public class AiMetrics {
     /**
      * Counts a tool call.
      *
-     * @param source {@code local} for a tool in this app, {@code mcp} for one on the ops
-     *               server. Worth separating, because an MCP tool crosses a process boundary
-     *               and fails in ways a local method never will.
+     * @param source {@code local} for an in-process tool or {@code mcp} for an operations-
+     *               server tool crossing a process boundary
      */
     public void recordToolCall(String toolName, String source) {
         Counter.builder(TOOL_CALLS)

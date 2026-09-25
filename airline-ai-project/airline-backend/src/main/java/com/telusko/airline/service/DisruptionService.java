@@ -15,12 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs the disruption supervisor and turns the result into something a UI can render.
- * <p>
- * This is the file that makes multi agent work explainable, and it is the one worth reading
- * twice. The supervisor returns a paragraph; on its own that paragraph is unverifiable. What
- * makes it trustworthy is the {@link AgenticScope} that comes back with it, holding what
- * every sub agent was asked and what it answered. Both go to the browser.
+ * Runs the disruption supervisor and maps its result and {@link AgenticScope} into a
+ * UI-ready response containing the final message and each sub-agent contribution.
  */
 @Service
 public class DisruptionService {

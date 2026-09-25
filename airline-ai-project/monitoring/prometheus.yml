@@ -1,6 +1,5 @@
 global:
-  # Five seconds rather than the default fifteen. A class demo lasts two minutes, and a
-  # dashboard that updates three times in that window looks broken.
+  # Short local scrape interval for responsive dashboard updates.
   scrape_interval: 5s
 
 scrape_configs:

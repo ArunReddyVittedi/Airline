@@ -104,7 +104,7 @@ export default function Home({ user }) {
       const result = await api.naturalSearch(sentence)
       setFlights(result.flights)
       // Echoing back what the model understood matters most when the result is empty:
-      // otherwise there is no way to tell "no flights" from "we misread you".
+      // so an empty result can be distinguished from an incorrectly interpreted request.
       setInterpreted(result.interpretedAs)
       setSearched(true)
       revealResults()

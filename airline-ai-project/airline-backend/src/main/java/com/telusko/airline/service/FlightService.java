@@ -19,12 +19,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Everything about finding flights. No AI in this file.
- * <p>
- * That separation is deliberate and it is the point of the whole design. The tools and agents
- * are a thin layer over this service, so a flight search behaves identically whether it came
- * from the search box or from a sentence typed at the chatbot. It also means these rules can
- * be tested without spending a single token.
+ * Database-backed flight search shared by conventional endpoints and AI tools. Keeping the
+ * search rules below the AI layer produces identical results for structured and natural-
+ * language requests.
  */
 @Service
 public class FlightService {
@@ -41,20 +38,8 @@ public class FlightService {
     }
 
     /**
-     * Resolves whatever the caller said into an airport.
-     * <p>
-     * Passengers and models both write "Mumbai" as often as "BOM", so accepting only one of
-     * them would make half the questions fail.
-     * <p>
-     * This started out branching on length: three characters meant a code, anything longer
-     * meant a city. That is wrong, and "Goa" is exactly the case that proves it. Three
-     * letters, plainly a city, and its airport code is GOI. The length version looked up an
-     * airport called GOA, found nothing, and every search for Goa came back empty while the
-     * same search for GOI worked, which is a maddening thing to debug.
-     * <p>
-     * Trying the code first and falling back to the city is both shorter and always right.
-     * There is no city whose name collides with a different airport's code in this data set,
-     * and if one ever appears the code is the more specific of the two and should win.
+     * Resolves either an IATA code or city name. Code lookup runs first because codes are more
+     * specific; city lookup handles three-letter names such as Goa without length heuristics.
      */
     @Transactional(readOnly = true)
     public Optional<Airport> resolveAirport(String cityOrCode) {
@@ -129,7 +114,7 @@ public class FlightService {
     }
 
     /**
-     * Where you can go from here, and the lowest fare on sale to each place.
+     * Returns reachable destinations and the lowest current fare for each.
      * <p>
      * Looks three weeks ahead, which is the window the seeded schedule covers. A real airline
      * would use its whole schedule; the shape of the answer is the same either way.
@@ -171,8 +156,7 @@ public class FlightService {
     }
 
     /**
-     * Marks a flight as cancelled or delayed. This is the admin action that gives the
-     * disruption agent something real to react to during a demo.
+     * Updates operational flight status and delay data used by disruption handling.
      */
     @Transactional
     public FlightOption updateStatus(String flightNumber, FlightStatus status, int delayMinutes) {

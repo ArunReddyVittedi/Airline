@@ -10,17 +10,8 @@ const QUICK = [
 ]
 
 /**
- * The floating assistant, the way a courier or a bank site does it: a button in the corner
- * of every page that opens a small chat panel in place.
- *
- * Worth having in addition to the full Assistant page rather than instead of it. Somebody
- * halfway through choosing a flight who wants to know the baggage allowance should not have
- * to leave the search results to ask, and the panel answers without navigating anywhere. The
- * page stays for the longer conversation, and it is the one that shows the trace.
- *
- * Only rendered when signed in, because every tool the assistant can call needs to know
- * whose booking it is looking at. It also hides itself on the Assistant page, where a
- * floating button offering the thing already filling the screen would be silly.
+ * Floating assistant for short questions without leaving the current page. It is available
+ * only to signed-in users and hidden on the full Assistant page, which provides trace details.
  */
 export default function AssistantWidget({ user }) {
   const [open, setOpen] = useState(false)
@@ -28,7 +19,7 @@ export default function AssistantWidget({ user }) {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Escape closes it. Cheap to add and the first thing anyone tries.
+  // Close the panel with the standard Escape-key interaction.
   useEffect(() => {
     if (!open) return undefined
 

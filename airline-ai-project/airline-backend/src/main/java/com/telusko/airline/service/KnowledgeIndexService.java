@@ -19,9 +19,8 @@ import java.util.List;
 /**
  * Puts the knowledge base into the vector store. The writing half of RAG.
  * <p>
- * Kept apart from {@code RagConfig}, which only reads. Indexing runs on startup and when an
- * admin edits an article, and it is the operation that costs money in embedding calls, so it
- * is worth being able to see and trigger on its own.
+ * Kept separate from read-side {@code RagConfig}. Indexing runs on startup or through the
+ * explicit admin action because it performs billable embedding calls.
  */
 @Service
 public class KnowledgeIndexService {
@@ -110,8 +109,7 @@ public class KnowledgeIndexService {
     /**
      * Drops the chunks belonging to one article.
      * <p>
-     * Uses the store's own metadata filter rather than a hand written delete, so this keeps
-     * working if the table layout changes underneath us.
+     * Uses the embedding store's metadata filter to avoid depending on its table layout.
      */
     private void removeExisting(KnowledgeArticle article) {
         try {
@@ -119,8 +117,7 @@ public class KnowledgeIndexService {
                     dev.langchain4j.store.embedding.filter.MetadataFilterBuilder
                             .metadataKey("slug").isEqualTo(article.getSlug()));
         } catch (RuntimeException ex) {
-            // First run, when the table exists but holds nothing matching. Not worth
-            // failing a startup over, and the ingest below is what actually matters.
+            // A missing prior match is expected on first indexing and does not block ingest.
             log.debug("Nothing to remove for slug {}: {}", article.getSlug(), ex.getMessage());
         }
     }

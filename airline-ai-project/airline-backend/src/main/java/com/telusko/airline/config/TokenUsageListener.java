@@ -20,9 +20,8 @@ import org.springframework.stereotype.Component;
  * service would miss most of the spend. A tool calling chain of four steps is four billed
  * calls, and only the listener is told about all four.
  * <p>
- * A LangChain4j detail worth knowing: this bean is picked up by the OpenAI starter simply by
- * existing. Any {@code ChatModelListener} bean is attached to the auto configured models, so
- * there is nothing to register.
+ * The OpenAI starter automatically attaches every {@code ChatModelListener} bean to its
+ * configured models.
  */
 @Component
 public class TokenUsageListener implements ChatModelListener {
@@ -81,9 +80,7 @@ public class TokenUsageListener implements ChatModelListener {
     }
 
     /**
-     * Input and output are tagged rather than summed, because they cost different amounts.
-     * A feature that sends a huge prompt and gets back one line is a different problem from
-     * one that writes essays, and a single total hides which of the two you have.
+     * Tags input and output separately because they have different cost and usage profiles.
      */
     private void count(String model, String type, Integer tokens) {
         if (tokens == null) {
